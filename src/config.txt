@@ -1,0 +1,37 @@
+// absolute or relative, following link
+LogPath = log/error.log
+
+// DEBUG, INFO, WARNING, ERROR
+LogLevel = DEBUG
+
+// Log file size in MB
+MaxLogFileSize = 100
+
+// Max number of log files
+MaxRotatedFiles = 10
+
+// Where dictionaries are stored
+DictionaryPath = ./dictionary
+
+// Where indexes at stored
+IndexPath = ./indexes
+
+// Location where to store queries results. 
+// Files are removed when transfert is completed.
+// Files are removed when zsearch starts
+ResultTempPath = ./tmp
+
+// localhost, IP or 0.0.0.0
+BindIP = localhost
+
+// port for select queries
+UserPort = 9090
+
+// port for management queries (delete/truncate/import/create table).
+// if admin port = 0, admin queries are available on user port
+// use a web server to filter access to the admin port
+AdminPort = 9091
+
+// default limit for query result size
+// set to 0 for unlimited (then make sure you have enough disk space on ResultTempPath)
+Limit = 1000
