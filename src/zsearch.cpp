@@ -74,7 +74,6 @@ void processArgs(int argc, char **argv) {
         switch (opt) {
             case 'v':
                 verbose_terminal = true;
-                std::cout << "verbose_terminal " << std::endl;
                 break;
             case 'c':
                 printContact();
@@ -105,29 +104,9 @@ int main(int argc, char *argv[]) {
     Log::init();
     processArgs(argc,argv);
     printVersion();
-    //createTestFiles();
-    //exit(0);
-    //repository::ImportFile ifile("tests/taxis.json.lz4","nyc_taxis");
-    //std::shared_ptr<queries::QueryStatus> qs = std::make_shared<queries::QueryStatus>();
-    ///return ifile.doImport(qs);
-    //auto i = indexes::IndexRepository::getInstance()->getIndex("nyc_taxis","total_amount");
-    //i->showChunkStates("total_amount");
-    //exit(0);
-
-    //checkKernels(false); exit(0);
     queries::executor::Server::start();
     signal(SIGINT, signalHandler);
 
-    //cout << dateFTToSeconds("1970-12-14 16:41:23") << endl;
-
-    //initCommonEnglishWordTest();
-    //createMySqlTaxisFile();
-    //testImportNewYorkTaxiDatabase();
-    //testSqlQueryEnglishWord();
-    //testSqlQueryTaxis();
-    //joinTest();
-    //shared_ptr<IndexManager> indexManager = IndexRepository::getInstance()->getIndex("nyc_taxis","total_amount");
-    //shared_ptr<IndexChunk> c = indexManager->getChunkForRead(0);
    while(true) {
        sleep(1000);
    }
