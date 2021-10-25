@@ -4744,7 +4744,7 @@ void Codegen::loadCenter(uint64_t v) {
 
 void Codegen::distanceSphere(int bank1, int targetLen) {
     if (inValues.empty()) return; // ????
-    int INSTR0[] = { 0x56 }; //  push   %rsi
+    int INSTR0[] = { 0x57, 0x56 }; //  push   %rdi, push rsi
     add(INSTR0, size(INSTR0));
     int INSTR1[] = {0xc5 ,0xff ,0xf0 ,0x86}; // vlddqu 0x1234(%rsi),%ymm0
     add(INSTR1, size(INSTR1));
@@ -4772,7 +4772,7 @@ void Codegen::distanceSphere(int bank1, int targetLen) {
     add(INSTR5, size(INSTR5));
     addMemoryOffsetL((uint64_t)cal_distance_sphere);
     add(INSTR6, size(INSTR6));
-    int INSTR10[] = {0x5e,0xc5 ,0xfd ,0x7f ,0x86}; // vmovdqa %ymm0,0x1234(%rsi)
+    int INSTR10[] = {0x5e,0x5f, 0xc5 ,0xfd ,0x7f ,0x86}; // vmovdqa %ymm0,0x1234(%rsi)
     add(INSTR10, size(INSTR10));
     addMemoryOffset(bank1,1);
 
