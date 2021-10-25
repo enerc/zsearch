@@ -8,7 +8,7 @@ using namespace mapping;
 namespace queries::model {
 
 void DropModel::execute(queries::builders::AST *ast) {
-    if (!IndexDefinitionManager::getInstance()->removeIndex(tableName)) {
+    if (!IndexDefinitionManager::getInstance()->removeIndex(tableName) && !ifExists) {
         Log::error(ast->getQueryStatus(),"Drop index "+tableName+ " failed. Table not found");
     }
 }

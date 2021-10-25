@@ -13,6 +13,7 @@ public:
     [[nodiscard]] ClassInstanceType getClassInstanceType()  const override {return ClassInstanceDrop;};
 
     std::string tableName;
+    bool        ifExists;
 };
 
 }

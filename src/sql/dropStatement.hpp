@@ -21,7 +21,7 @@ struct DropStatement : SQLStatement {
     ~DropStatement() override;
 
     DropType type;
-    bool ifExists{};
+    bool ifExists = true;
     char* schema;
     char* name;
 };

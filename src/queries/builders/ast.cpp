@@ -283,6 +283,7 @@ bool AST::convertCreateStatement(const CreateStatement *stmt, shared_ptr<BaseMod
 bool AST::convertDropStatement(const DropStatement *stmt, shared_ptr<BaseModel> b) {
     auto a = make_shared<DropModel>(b);
     a->tableName = stmt->name;
+    a->ifExists = stmt->ifExists;
     b->exprList.push_back(a);
     return true;
 }
