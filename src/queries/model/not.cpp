@@ -30,6 +30,7 @@ void NotModel::execute(queries::builders::AST *ast) {
             b = b == 0 ? 1 : 0;
             workingSet[p+k] |=  b << x;
         }
+        fastAnd(workingSet+p,workingSet+p,c->getBase()->getDeletedInfo(),CHUNK_SIZE/8);
     }
     exprList.at(0)->freeWorkingSet();
 
