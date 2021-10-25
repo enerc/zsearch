@@ -111,7 +111,7 @@ void ImportLZ4File::processingLZ4Loop(WorkerLZ4 *) {
 	while (toRead > endFrameSize ) {
 		size_t listSize;
 		uint32_t cmpBytes;
-        (void)read(fd,&cmpBytes,4);
+		size_t dummy = read(fd,&cmpBytes,4);
 		toRead -= 4;
 
 		listMu.lock();
@@ -132,7 +132,7 @@ void ImportLZ4File::processingLZ4Loop(WorkerLZ4 *) {
 			len = -1;
 			break;
 		}
-		(void)read(fd,&v[0],cmpBytes);
+		dummy = read(fd,&v[0],cmpBytes);
 		toRead -= cmpBytes;
 		listMu.lock();
 		cmpFrames.push_back(v);

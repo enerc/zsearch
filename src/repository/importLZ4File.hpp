@@ -50,19 +50,19 @@ private:
     [[maybe_unused]] void	dumpHeader();
 	inline uint64_t get64() {
 		uint64_t ret;
-        (void)read(fd,&ret,8);
+		size_t dummy = read(fd,&ret,8);
 		len -= 8;
 		return ret;
 	}
 	inline uint32_t get32() {
 		uint32_t ret;
-		(void)read(fd,&ret,4);
+		size_t  dummy = read(fd,&ret,4);
 		len -= 4;
 		return ret;
 	}
 	inline char get8() {
 		char ret;
-        (void)read(fd,&ret,1);
+		size_t  dummy = read(fd,&ret,1);
 		len --;
 		return ret;
 	}
