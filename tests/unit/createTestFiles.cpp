@@ -4,11 +4,13 @@
 #include <map>
 #include <fstream>
 #include <string>
+#include <filesystem>
 #include "../../src/common/simdjson.h"
 #include "../../config.h"
 
 using namespace std;
 using namespace simdjson;
+
 
 //
 // New York taxis
@@ -429,7 +431,7 @@ void taxis_below1() {
         i++;
         double g;
         sscanf(&tp.at(i),"%lf",&g);
-        if (g < 100) {
+        if (g < 1) {
             fo.write(tp.c_str(),tp.size());
             fo.write(k,1);
         }
@@ -440,6 +442,9 @@ void taxis_below1() {
 }
 
 void createTestFiles() {
+    if (!filesystem::is_directory("tests") || !filesystem::exists("tests")) {
+        filesystem::create_directory("tests");
+    }
     createStationTemperatureTestFile();
     createStationTestFile();
     createRateCodesTestFile();
