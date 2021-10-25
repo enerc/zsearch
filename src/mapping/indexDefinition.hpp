@@ -75,8 +75,8 @@ public:
 		}
 		return mae_boo.at((uint32_t)h);
 	}
-    [[nodiscard]] const mapping_entry &getIndexDefinition(uint64_t index) const {
-        return mae_boo.at((uint32_t)index);
+    [[nodiscard]] const mapping_entry *getIndexDefinition(uint64_t index) const {
+        return &mae_boo.at((uint32_t)index);
     }
 
     [[nodiscard]] inline std::shared_ptr<indexes::IndexManager>getIndex(const std::string_view &key) const {

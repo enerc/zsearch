@@ -11,7 +11,6 @@ inline void mergeDeleted(uint64_t *workingSet,const void *deletedInfo) {
     fastAnd(workingSet,workingSet,deletedInfo,CHUNK_SIZE/8);
 }
 bool Kernels::execKernelNone(const std::shared_ptr<indexes::IndexManager> &indexManager, uint64_t *workingSet,const std::vector<uint32_t>& jobs, uint32_t start, uint32_t JobLen) {
-    cout << "execKernelNone" << endl;
     for (uint32_t i = start; i < start + JobLen && i < jobs.size(); i++) {
         shared_ptr<IndexChunk> c = indexManager->getChunkForRead(jobs.at(i));
         const uint32_t chunkId = c->getChunk();

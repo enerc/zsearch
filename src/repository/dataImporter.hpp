@@ -34,11 +34,11 @@ private:
 
 	void 	processJsonInput(const simdjson::dom::element &doc);
 	void 	processJsonObject(const simdjson::dom::object &doc);
-    void 	processJsonObjectDefined(const simdjson::dom::key_value_pair &e, const mapping::mapping_entry &me);
-    void 	processJsonObjectJoin(int z,const mapping::mapping_entry &me);
+    void 	processJsonObjectDefined(const simdjson::dom::key_value_pair &e, const mapping::mapping_entry *me);
+    void 	processJsonObjectJoin(int z,const mapping::mapping_entry *me);
 
 	__int128_t convertSigned(uint32_t length, const simdjson::dom::element &e, const std::string_view &f) ;
-	__uint128_t convertUnsigned(uint32_t length, const simdjson::dom::element &e, const std::string_view &f,const mapping::mapping_entry &indexType);
+	__uint128_t convertUnsigned(uint32_t length, const simdjson::dom::element &e, const std::string_view &f,const mapping::mapping_entry *indexType);
 	double convertDouble(const simdjson::dom::element &e, const std::string_view &f) ;
 	std::string_view convertString(const simdjson::dom::element &e, const std::string_view &f) ;
 	void	clearColumnSet();

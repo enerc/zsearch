@@ -62,8 +62,8 @@ void OrderModel::orderOnOne() {
         Log::error(ast->getQueryStatus(), "Order : invalid field to order on " + fieldsToOrder.at(0));
         return;
     }
-    const auto &me = columnMapping->getIndexDefinition(idx);
-    if ((me.flags & EntryArraySet) != 0) {
+    const auto me = columnMapping->getIndexDefinition(idx);
+    if ((me->flags & EntryArraySet) != 0) {
         Log::error(ast->getQueryStatus(), "Ordering on array not implemented yet : " + fieldsToOrder.at(0));
         return;
     }
@@ -71,24 +71,24 @@ void OrderModel::orderOnOne() {
         Log::error(ast->getQueryStatus(), "Sorting on more than 2^32 is not supported yet (and slow) : " + to_string(where->getNbResults()) + " items");
         return;
     }
-    switch (me.s) {
+    switch (me->s) {
         case storage_type_null:
         case storage_type_unknown:
             return;
         case storage_type_signed:
         case storage_type_signed_fixed_point:
-            if (me.length <= 8) orderOne<char,Type_Numeric>();
-            else if (me.length <= 16) orderOne<short,Type_Numeric>();
-            else if (me.length <= 32) orderOne<int32_t,Type_Numeric>();
-            else if (me.length <= 64) orderOne<int64_t,Type_Numeric>();
+            if (me->length <= 8) orderOne<char,Type_Numeric>();
+            else if (me->length <= 16) orderOne<short,Type_Numeric>();
+            else if (me->length <= 32) orderOne<int32_t,Type_Numeric>();
+            else if (me->length <= 64) orderOne<int64_t,Type_Numeric>();
             else orderOne<__int128_t,Type_Numeric>();
             break;
         case storage_type_unsigned:
         case storage_type_unsigned_fixed_point:
-            if (me.length <= 8) orderOne<unsigned char,Type_Numeric>();
-            else if (me.length <= 16) orderOne<unsigned short,Type_Numeric>();
-            else if (me.length <= 32) orderOne<uint32_t,Type_Numeric>();
-            else if (me.length <= 64) orderOne<uint64_t,Type_Numeric>();
+            if (me->length <= 8) orderOne<unsigned char,Type_Numeric>();
+            else if (me->length <= 16) orderOne<unsigned short,Type_Numeric>();
+            else if (me->length <= 32) orderOne<uint32_t,Type_Numeric>();
+            else if (me->length <= 64) orderOne<uint64_t,Type_Numeric>();
             else orderOne<__uint128_t,Type_Numeric>();
             break;
         case storage_type_float16:
@@ -121,13 +121,13 @@ void OrderModel::orderOnTwo() {
         return;
     }
 
-    const auto &me0 = columnMapping->getIndexDefinition(idx0);
-    if ((me0.flags & EntryArraySet) != 0) {
+    const auto me0 = columnMapping->getIndexDefinition(idx0);
+    if ((me0->flags & EntryArraySet) != 0) {
         Log::error(ast->getQueryStatus(), "Ordering on array not implemented yet : " + fieldsToOrder.at(0));
         return;
     }
     const auto &me1 = columnMapping->getIndexDefinition(idx1);
-    if ((me1.flags & EntryArraySet) != 0) {
+    if ((me1->flags & EntryArraySet) != 0) {
         Log::error(ast->getQueryStatus(), "Ordering on array not implemented yet : " + fieldsToOrder.at(1));
         return;
     }
@@ -137,31 +137,31 @@ void OrderModel::orderOnTwo() {
         return;
     }
 
-    switch (me0.s) {
+    switch (me0->s) {
         case storage_type_null:
         case storage_type_unknown:
             return;
         case storage_type_signed:
         case storage_type_signed_fixed_point:
-            if (me0.length <= 8) {
-                switch (me1.s) {
+            if (me0->length <= 8) {
+                switch (me1->s) {
                     case storage_type_null:
                     case storage_type_unknown:
                         return;
                     case storage_type_signed:
                     case storage_type_signed_fixed_point:
-                        if (me1.length <= 8) orderTwo<char,char,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 16) orderTwo<char,short,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 32) orderTwo<char,int,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 64) orderTwo<char,int64_t,Type_Numeric,Type_Numeric>();
+                        if (me1->length <= 8) orderTwo<char,char,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 16) orderTwo<char,short,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 32) orderTwo<char,int,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 64) orderTwo<char,int64_t,Type_Numeric,Type_Numeric>();
                         else orderTwo<char,__int128_t,Type_Numeric,Type_Numeric>();
                         break;
                     case storage_type_unsigned:
                     case storage_type_unsigned_fixed_point:
-                        if (me1.length <= 8) orderTwo<char,unsigned char,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 16) orderTwo<char,unsigned short,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 32) orderTwo<char,unsigned int,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 64) orderTwo<char,uint64_t,Type_Numeric,Type_Numeric>();
+                        if (me1->length <= 8) orderTwo<char,unsigned char,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 16) orderTwo<char,unsigned short,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 32) orderTwo<char,unsigned int,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 64) orderTwo<char,uint64_t,Type_Numeric,Type_Numeric>();
                         else orderTwo<char,__uint128_t,Type_Numeric,Type_Numeric>();
                         break;
                     case storage_type_float16:
@@ -181,25 +181,25 @@ void OrderModel::orderOnTwo() {
                         break;
                 }
             }
-            else if (me0.length <= 16) {
-                switch (me1.s) {
+            else if (me0->length <= 16) {
+                switch (me1->s) {
                     case storage_type_null:
                     case storage_type_unknown:
                         return;
                     case storage_type_signed:
                     case storage_type_signed_fixed_point:
-                        if (me1.length <= 8) orderTwo<short,char,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 16) orderTwo<short,short,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 32) orderTwo<short,int,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 64) orderTwo<short,int64_t,Type_Numeric,Type_Numeric>();
+                        if (me1->length <= 8) orderTwo<short,char,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 16) orderTwo<short,short,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 32) orderTwo<short,int,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 64) orderTwo<short,int64_t,Type_Numeric,Type_Numeric>();
                         else orderTwo<short,__int128_t,Type_Numeric,Type_Numeric>();
                         break;
                     case storage_type_unsigned:
                     case storage_type_unsigned_fixed_point:
-                        if (me1.length <= 8) orderTwo<short,unsigned char,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 16) orderTwo<short,unsigned short,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 32) orderTwo<short,unsigned int,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 64) orderTwo<short,uint64_t,Type_Numeric,Type_Numeric>();
+                        if (me1->length <= 8) orderTwo<short,unsigned char,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 16) orderTwo<short,unsigned short,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 32) orderTwo<short,unsigned int,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 64) orderTwo<short,uint64_t,Type_Numeric,Type_Numeric>();
                         else orderTwo<short,__uint128_t,Type_Numeric,Type_Numeric>();
                         break;
                     case storage_type_float16:
@@ -219,25 +219,25 @@ void OrderModel::orderOnTwo() {
                         break;
                 }
             }
-            else if (me0.length <= 32) {
-                switch (me1.s) {
+            else if (me0->length <= 32) {
+                switch (me1->s) {
                     case storage_type_null:
                     case storage_type_unknown:
                         return;
                     case storage_type_signed:
                     case storage_type_signed_fixed_point:
-                        if (me1.length <= 8) orderTwo<int32_t,char,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 16) orderTwo<int32_t,short,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 32) orderTwo<int32_t,int32_t,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 64) orderTwo<int32_t,int64_t,Type_Numeric,Type_Numeric>();
+                        if (me1->length <= 8) orderTwo<int32_t,char,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 16) orderTwo<int32_t,short,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 32) orderTwo<int32_t,int32_t,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 64) orderTwo<int32_t,int64_t,Type_Numeric,Type_Numeric>();
                         else orderTwo<int,__int128_t,Type_Numeric,Type_Numeric>();
                         break;
                     case storage_type_unsigned:
                     case storage_type_unsigned_fixed_point:
-                        if (me1.length <= 8) orderTwo<int32_t,unsigned char,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 16) orderTwo<int32_t,unsigned short,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 32) orderTwo<int32_t,uint32_t,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 64) orderTwo<int32_t,uint64_t,Type_Numeric,Type_Numeric>();
+                        if (me1->length <= 8) orderTwo<int32_t,unsigned char,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 16) orderTwo<int32_t,unsigned short,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 32) orderTwo<int32_t,uint32_t,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 64) orderTwo<int32_t,uint64_t,Type_Numeric,Type_Numeric>();
                         else orderTwo<int32_t,__uint128_t,Type_Numeric,Type_Numeric>();
                         break;
                     case storage_type_float16:
@@ -257,25 +257,25 @@ void OrderModel::orderOnTwo() {
                         break;
                 }
             }
-            else if (me0.length <= 64) {
-                switch (me1.s) {
+            else if (me0->length <= 64) {
+                switch (me1->s) {
                     case storage_type_null:
                     case storage_type_unknown:
                         return;
                     case storage_type_signed:
                     case storage_type_signed_fixed_point:
-                        if (me1.length <= 8) orderTwo<int64_t,char,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 16) orderTwo<int64_t,short,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 32) orderTwo<int64_t,int32_t,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 64) orderTwo<int64_t,int64_t,Type_Numeric,Type_Numeric>();
+                        if (me1->length <= 8) orderTwo<int64_t,char,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 16) orderTwo<int64_t,short,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 32) orderTwo<int64_t,int32_t,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 64) orderTwo<int64_t,int64_t,Type_Numeric,Type_Numeric>();
                         else orderTwo<int64_t,__int128_t,Type_Numeric,Type_Numeric>();
                         break;
                     case storage_type_unsigned:
                     case storage_type_unsigned_fixed_point:
-                        if (me1.length <= 8) orderTwo<int64_t,unsigned char,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 16) orderTwo<int64_t,unsigned short,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 32) orderTwo<int64_t,uint32_t,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 64) orderTwo<int64_t,uint64_t,Type_Numeric,Type_Numeric>();
+                        if (me1->length <= 8) orderTwo<int64_t,unsigned char,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 16) orderTwo<int64_t,unsigned short,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 32) orderTwo<int64_t,uint32_t,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 64) orderTwo<int64_t,uint64_t,Type_Numeric,Type_Numeric>();
                         else orderTwo<int64_t,__uint128_t,Type_Numeric,Type_Numeric>();
                         break;
                     case storage_type_float16:
@@ -296,24 +296,24 @@ void OrderModel::orderOnTwo() {
                 }
             }
             else {
-                switch (me1.s) {
+                switch (me1->s) {
                     case storage_type_null:
                     case storage_type_unknown:
                         return;
                     case storage_type_signed:
                     case storage_type_signed_fixed_point:
-                        if (me1.length <= 8) orderTwo<__int128_t, char,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 16) orderTwo<__int128_t, short,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 32) orderTwo<__int128_t, int32_t,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 64) orderTwo<__int128_t, int64_t,Type_Numeric,Type_Numeric>();
+                        if (me1->length <= 8) orderTwo<__int128_t, char,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 16) orderTwo<__int128_t, short,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 32) orderTwo<__int128_t, int32_t,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 64) orderTwo<__int128_t, int64_t,Type_Numeric,Type_Numeric>();
                         else orderTwo<__int128_t, __int128_t,Type_Numeric,Type_Numeric>();
                         break;
                     case storage_type_unsigned:
                     case storage_type_unsigned_fixed_point:
-                        if (me1.length <= 8) orderTwo<__int128_t, unsigned char,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 16) orderTwo<__int128_t, unsigned short,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 32) orderTwo<__int128_t, uint32_t,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 64) orderTwo<__int128_t, uint64_t,Type_Numeric,Type_Numeric>();
+                        if (me1->length <= 8) orderTwo<__int128_t, unsigned char,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 16) orderTwo<__int128_t, unsigned short,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 32) orderTwo<__int128_t, uint32_t,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 64) orderTwo<__int128_t, uint64_t,Type_Numeric,Type_Numeric>();
                         else orderTwo<__int128_t, __uint128_t,Type_Numeric,Type_Numeric>();
                         break;
                     case storage_type_float16:
@@ -336,25 +336,25 @@ void OrderModel::orderOnTwo() {
             break;
         case storage_type_unsigned:
         case storage_type_unsigned_fixed_point:
-            if (me0.length <= 8) {
-                switch (me1.s) {
+            if (me0->length <= 8) {
+                switch (me1->s) {
                     case storage_type_null:
                     case storage_type_unknown:
                         return;
                     case storage_type_signed:
                     case storage_type_signed_fixed_point:
-                        if (me1.length <= 8) orderTwo<unsigned char,char,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 16) orderTwo<unsigned char,short,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 32) orderTwo<unsigned char,int32_t,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 64) orderTwo<unsigned char,int64_t,Type_Numeric,Type_Numeric>();
+                        if (me1->length <= 8) orderTwo<unsigned char,char,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 16) orderTwo<unsigned char,short,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 32) orderTwo<unsigned char,int32_t,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 64) orderTwo<unsigned char,int64_t,Type_Numeric,Type_Numeric>();
                         else orderTwo<unsigned char,__int128_t,Type_Numeric,Type_Numeric>();
                         break;
                     case storage_type_unsigned:
                     case storage_type_unsigned_fixed_point:
-                        if (me1.length <= 8) orderTwo<unsigned char,unsigned char,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 16) orderTwo<unsigned char,unsigned short,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 32) orderTwo<unsigned char,uint32_t,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 64) orderTwo<unsigned char,uint64_t,Type_Numeric,Type_Numeric>();
+                        if (me1->length <= 8) orderTwo<unsigned char,unsigned char,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 16) orderTwo<unsigned char,unsigned short,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 32) orderTwo<unsigned char,uint32_t,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 64) orderTwo<unsigned char,uint64_t,Type_Numeric,Type_Numeric>();
                         else orderTwo<unsigned char,__uint128_t,Type_Numeric,Type_Numeric>();
                         break;
                     case storage_type_float16:
@@ -374,25 +374,25 @@ void OrderModel::orderOnTwo() {
                         break;
                 }
             }
-            else if (me0.length <= 16) {
-                switch (me1.s) {
+            else if (me0->length <= 16) {
+                switch (me1->s) {
                     case storage_type_null:
                     case storage_type_unknown:
                         return;
                     case storage_type_signed:
                     case storage_type_signed_fixed_point:
-                        if (me1.length <= 8) orderTwo<unsigned short,char,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 16) orderTwo<unsigned short,short,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 32) orderTwo<unsigned short,int32_t,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 64) orderTwo<unsigned short,int64_t,Type_Numeric,Type_Numeric>();
+                        if (me1->length <= 8) orderTwo<unsigned short,char,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 16) orderTwo<unsigned short,short,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 32) orderTwo<unsigned short,int32_t,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 64) orderTwo<unsigned short,int64_t,Type_Numeric,Type_Numeric>();
                         else orderTwo<unsigned short,__int128_t,Type_Numeric,Type_Numeric>();
                         break;
                     case storage_type_unsigned:
                     case storage_type_unsigned_fixed_point:
-                        if (me1.length <= 8) orderTwo<unsigned short,unsigned char,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 16) orderTwo<unsigned short,unsigned short,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 32) orderTwo<unsigned short,uint32_t,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 64) orderTwo<unsigned short,uint64_t,Type_Numeric,Type_Numeric>();
+                        if (me1->length <= 8) orderTwo<unsigned short,unsigned char,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 16) orderTwo<unsigned short,unsigned short,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 32) orderTwo<unsigned short,uint32_t,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 64) orderTwo<unsigned short,uint64_t,Type_Numeric,Type_Numeric>();
                         else orderTwo<unsigned short,__uint128_t,Type_Numeric,Type_Numeric>();
                         break;
                     case storage_type_float16:
@@ -412,25 +412,25 @@ void OrderModel::orderOnTwo() {
                         break;
                 }
             }
-            else if (me0.length <= 32) {
-                switch (me1.s) {
+            else if (me0->length <= 32) {
+                switch (me1->s) {
                     case storage_type_null:
                     case storage_type_unknown:
                         return;
                     case storage_type_signed:
                     case storage_type_signed_fixed_point:
-                        if (me1.length <= 8) orderTwo<uint32_t,char,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 16) orderTwo<uint32_t,short,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 32) orderTwo<uint32_t,int32_t,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 64) orderTwo<uint32_t,int64_t,Type_Numeric,Type_Numeric>();
+                        if (me1->length <= 8) orderTwo<uint32_t,char,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 16) orderTwo<uint32_t,short,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 32) orderTwo<uint32_t,int32_t,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 64) orderTwo<uint32_t,int64_t,Type_Numeric,Type_Numeric>();
                         else orderTwo<uint32_t,__int128_t,Type_Numeric,Type_Numeric>();
                         break;
                     case storage_type_unsigned:
                     case storage_type_unsigned_fixed_point:
-                        if (me1.length <= 8) orderTwo<uint32_t,unsigned char,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 16) orderTwo<uint32_t,unsigned short,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 32) orderTwo<uint32_t,uint32_t,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 64) orderTwo<uint32_t,uint64_t,Type_Numeric,Type_Numeric>();
+                        if (me1->length <= 8) orderTwo<uint32_t,unsigned char,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 16) orderTwo<uint32_t,unsigned short,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 32) orderTwo<uint32_t,uint32_t,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 64) orderTwo<uint32_t,uint64_t,Type_Numeric,Type_Numeric>();
                         else orderTwo<uint32_t,__uint128_t,Type_Numeric,Type_Numeric>();
                         break;
                     case storage_type_float16:
@@ -450,25 +450,25 @@ void OrderModel::orderOnTwo() {
                         break;
                 }
             }
-            else if (me0.length <= 64) {
-                switch (me1.s) {
+            else if (me0->length <= 64) {
+                switch (me1->s) {
                     case storage_type_null:
                     case storage_type_unknown:
                         return;
                     case storage_type_signed:
                     case storage_type_signed_fixed_point:
-                        if (me1.length <= 8) orderTwo<uint64_t,char,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 16) orderTwo<uint64_t,short,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 32) orderTwo<uint64_t,int32_t,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 64) orderTwo<uint64_t,int64_t,Type_Numeric,Type_Numeric>();
+                        if (me1->length <= 8) orderTwo<uint64_t,char,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 16) orderTwo<uint64_t,short,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 32) orderTwo<uint64_t,int32_t,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 64) orderTwo<uint64_t,int64_t,Type_Numeric,Type_Numeric>();
                         else orderTwo<uint64_t,__int128_t,Type_Numeric,Type_Numeric>();
                         break;
                     case storage_type_unsigned:
                     case storage_type_unsigned_fixed_point:
-                        if (me1.length <= 8) orderTwo<uint64_t,unsigned char,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 16) orderTwo<uint64_t,unsigned short,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 32) orderTwo<uint64_t,uint32_t,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 64) orderTwo<uint64_t,uint64_t,Type_Numeric,Type_Numeric>();
+                        if (me1->length <= 8) orderTwo<uint64_t,unsigned char,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 16) orderTwo<uint64_t,unsigned short,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 32) orderTwo<uint64_t,uint32_t,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 64) orderTwo<uint64_t,uint64_t,Type_Numeric,Type_Numeric>();
                         else orderTwo<uint64_t,__uint128_t,Type_Numeric,Type_Numeric>();
                         break;
                     case storage_type_float16:
@@ -489,24 +489,24 @@ void OrderModel::orderOnTwo() {
                 }
             }
             else {
-                switch (me1.s) {
+                switch (me1->s) {
                     case storage_type_null:
                     case storage_type_unknown:
                         return;
                     case storage_type_signed:
                     case storage_type_signed_fixed_point:
-                        if (me1.length <= 8) orderTwo<__uint128_t, char,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 16) orderTwo<__uint128_t, short,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 32) orderTwo<__uint128_t, int32_t,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 64) orderTwo<__uint128_t, int64_t,Type_Numeric,Type_Numeric>();
+                        if (me1->length <= 8) orderTwo<__uint128_t, char,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 16) orderTwo<__uint128_t, short,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 32) orderTwo<__uint128_t, int32_t,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 64) orderTwo<__uint128_t, int64_t,Type_Numeric,Type_Numeric>();
                         else orderTwo<__uint128_t, __int128_t,Type_Numeric,Type_Numeric>();
                         break;
                     case storage_type_unsigned:
                     case storage_type_unsigned_fixed_point:
-                        if (me1.length <= 8) orderTwo<__uint128_t, unsigned char,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 16) orderTwo<__uint128_t, unsigned short,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 32) orderTwo<__uint128_t, uint32_t,Type_Numeric,Type_Numeric>();
-                        else if (me1.length <= 64) orderTwo<__uint128_t, uint64_t,Type_Numeric,Type_Numeric>();
+                        if (me1->length <= 8) orderTwo<__uint128_t, unsigned char,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 16) orderTwo<__uint128_t, unsigned short,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 32) orderTwo<__uint128_t, uint32_t,Type_Numeric,Type_Numeric>();
+                        else if (me1->length <= 64) orderTwo<__uint128_t, uint64_t,Type_Numeric,Type_Numeric>();
                         else orderTwo<__uint128_t, __uint128_t,Type_Numeric,Type_Numeric>();
                         break;
                     case storage_type_float16:
@@ -528,24 +528,24 @@ void OrderModel::orderOnTwo() {
             }
             break;
         case storage_type_float16:
-            switch (me1.s) {
+            switch (me1->s) {
                 case storage_type_null:
                 case storage_type_unknown:
                     return;
                 case storage_type_signed:
                 case storage_type_signed_fixed_point:
-                    if (me1.length <= 8) orderTwo<float16,char,Type_Float16,Type_Numeric>();
-                    else if (me1.length <= 16) orderTwo<float16,short,Type_Float16,Type_Numeric>();
-                    else if (me1.length <= 32) orderTwo<float16,int32_t,Type_Float16,Type_Numeric>();
-                    else if (me1.length <= 64) orderTwo<float16,int64_t,Type_Float16,Type_Numeric>();
+                    if (me1->length <= 8) orderTwo<float16,char,Type_Float16,Type_Numeric>();
+                    else if (me1->length <= 16) orderTwo<float16,short,Type_Float16,Type_Numeric>();
+                    else if (me1->length <= 32) orderTwo<float16,int32_t,Type_Float16,Type_Numeric>();
+                    else if (me1->length <= 64) orderTwo<float16,int64_t,Type_Float16,Type_Numeric>();
                     else orderTwo<float16,__int128_t,Type_Float16,Type_Numeric>();
                     break;
                 case storage_type_unsigned:
                 case storage_type_unsigned_fixed_point:
-                    if (me1.length <= 8) orderTwo<float16,unsigned char,Type_Float16,Type_Numeric>();
-                    else if (me1.length <= 16) orderTwo<float16,unsigned short,Type_Float16,Type_Numeric>();
-                    else if (me1.length <= 32) orderTwo<float16,uint32_t,Type_Float16,Type_Numeric>();
-                    else if (me1.length <= 64) orderTwo<float16,uint64_t,Type_Float16,Type_Numeric>();
+                    if (me1->length <= 8) orderTwo<float16,unsigned char,Type_Float16,Type_Numeric>();
+                    else if (me1->length <= 16) orderTwo<float16,unsigned short,Type_Float16,Type_Numeric>();
+                    else if (me1->length <= 32) orderTwo<float16,uint32_t,Type_Float16,Type_Numeric>();
+                    else if (me1->length <= 64) orderTwo<float16,uint64_t,Type_Float16,Type_Numeric>();
                     else orderTwo<float16,__uint128_t,Type_Float16,Type_Numeric>();
                     break;
                 case storage_type_float16:
@@ -566,24 +566,24 @@ void OrderModel::orderOnTwo() {
             }
             break;
         case storage_type_float:
-            switch (me1.s) {
+            switch (me1->s) {
                 case storage_type_null:
                 case storage_type_unknown:
                     return;
                 case storage_type_signed:
                 case storage_type_signed_fixed_point:
-                    if (me1.length <= 8) orderTwo<float,char,Type_Numeric,Type_Numeric>();
-                    else if (me1.length <= 16) orderTwo<float,short,Type_Numeric,Type_Numeric>();
-                    else if (me1.length <= 32) orderTwo<float,int32_t,Type_Numeric,Type_Numeric>();
-                    else if (me1.length <= 64) orderTwo<float,int64_t,Type_Numeric,Type_Numeric>();
+                    if (me1->length <= 8) orderTwo<float,char,Type_Numeric,Type_Numeric>();
+                    else if (me1->length <= 16) orderTwo<float,short,Type_Numeric,Type_Numeric>();
+                    else if (me1->length <= 32) orderTwo<float,int32_t,Type_Numeric,Type_Numeric>();
+                    else if (me1->length <= 64) orderTwo<float,int64_t,Type_Numeric,Type_Numeric>();
                     else orderTwo<float,__int128_t,Type_Numeric,Type_Numeric>();
                     break;
                 case storage_type_unsigned:
                 case storage_type_unsigned_fixed_point:
-                    if (me1.length <= 8) orderTwo<float,unsigned char,Type_Numeric,Type_Numeric>();
-                    else if (me1.length <= 16) orderTwo<float,unsigned short,Type_Numeric,Type_Numeric>();
-                    else if (me1.length <= 32) orderTwo<float,uint32_t,Type_Numeric,Type_Numeric>();
-                    else if (me1.length <= 64) orderTwo<float,uint64_t,Type_Numeric,Type_Numeric>();
+                    if (me1->length <= 8) orderTwo<float,unsigned char,Type_Numeric,Type_Numeric>();
+                    else if (me1->length <= 16) orderTwo<float,unsigned short,Type_Numeric,Type_Numeric>();
+                    else if (me1->length <= 32) orderTwo<float,uint32_t,Type_Numeric,Type_Numeric>();
+                    else if (me1->length <= 64) orderTwo<float,uint64_t,Type_Numeric,Type_Numeric>();
                     else orderTwo<float,__uint128_t,Type_Numeric,Type_Numeric>();
                     break;
                 case storage_type_float16:
@@ -604,24 +604,24 @@ void OrderModel::orderOnTwo() {
             }
             break;
         case storage_type_double:
-            switch (me1.s) {
+            switch (me1->s) {
                 case storage_type_null:
                 case storage_type_unknown:
                     return;
                 case storage_type_signed:
                 case storage_type_signed_fixed_point:
-                    if (me1.length <= 8) orderTwo<double,char,Type_Numeric,Type_Numeric>();
-                    else if (me1.length <= 16) orderTwo<double,short,Type_Numeric,Type_Numeric>();
-                    else if (me1.length <= 32) orderTwo<double,int32_t,Type_Numeric,Type_Numeric>();
-                    else if (me1.length <= 64) orderTwo<double,int64_t,Type_Numeric,Type_Numeric>();
+                    if (me1->length <= 8) orderTwo<double,char,Type_Numeric,Type_Numeric>();
+                    else if (me1->length <= 16) orderTwo<double,short,Type_Numeric,Type_Numeric>();
+                    else if (me1->length <= 32) orderTwo<double,int32_t,Type_Numeric,Type_Numeric>();
+                    else if (me1->length <= 64) orderTwo<double,int64_t,Type_Numeric,Type_Numeric>();
                     else orderTwo<double,__int128_t,Type_Numeric,Type_Numeric>();
                     break;
                 case storage_type_unsigned:
                 case storage_type_unsigned_fixed_point:
-                    if (me1.length <= 8) orderTwo<double,unsigned char,Type_Numeric,Type_Numeric>();
-                    else if (me1.length <= 16) orderTwo<double,unsigned short,Type_Numeric,Type_Numeric>();
-                    else if (me1.length <= 32) orderTwo<double,uint32_t,Type_Numeric,Type_Numeric>();
-                    else if (me1.length <= 64) orderTwo<double,uint64_t,Type_Numeric,Type_Numeric>();
+                    if (me1->length <= 8) orderTwo<double,unsigned char,Type_Numeric,Type_Numeric>();
+                    else if (me1->length <= 16) orderTwo<double,unsigned short,Type_Numeric,Type_Numeric>();
+                    else if (me1->length <= 32) orderTwo<double,uint32_t,Type_Numeric,Type_Numeric>();
+                    else if (me1->length <= 64) orderTwo<double,uint64_t,Type_Numeric,Type_Numeric>();
                     else orderTwo<double,__uint128_t,Type_Numeric,Type_Numeric>();
                     break;
                 case storage_type_float16:
@@ -642,24 +642,24 @@ void OrderModel::orderOnTwo() {
             }
             break;
         case storage_type_geopoint:
-            switch (me1.s) {
+            switch (me1->s) {
                 case storage_type_null:
                 case storage_type_unknown:
                     return;
                 case storage_type_signed:
                 case storage_type_signed_fixed_point:
-                    if (me1.length <= 8) orderTwo<__uint64_t,char,Type_Distance,Type_Numeric>();
-                    else if (me1.length <= 16) orderTwo<__uint64_t,short,Type_Distance,Type_Numeric>();
-                    else if (me1.length <= 32) orderTwo<__uint64_t,int32_t,Type_Distance,Type_Numeric>();
-                    else if (me1.length <= 64) orderTwo<__uint64_t,int64_t,Type_Distance,Type_Numeric>();
+                    if (me1->length <= 8) orderTwo<__uint64_t,char,Type_Distance,Type_Numeric>();
+                    else if (me1->length <= 16) orderTwo<__uint64_t,short,Type_Distance,Type_Numeric>();
+                    else if (me1->length <= 32) orderTwo<__uint64_t,int32_t,Type_Distance,Type_Numeric>();
+                    else if (me1->length <= 64) orderTwo<__uint64_t,int64_t,Type_Distance,Type_Numeric>();
                     else orderTwo<__uint64_t,__int128_t,Type_Distance,Type_Numeric>();
                     break;
                 case storage_type_unsigned:
                 case storage_type_unsigned_fixed_point:
-                    if (me1.length <= 8) orderTwo<__uint64_t,unsigned char,Type_Distance,Type_Numeric>();
-                    else if (me1.length <= 16) orderTwo<__uint64_t,unsigned short,Type_Distance,Type_Numeric>();
-                    else if (me1.length <= 32) orderTwo<__uint64_t,uint32_t,Type_Distance,Type_Numeric>();
-                    else if (me1.length <= 64) orderTwo<__uint64_t,uint64_t,Type_Distance,Type_Numeric>();
+                    if (me1->length <= 8) orderTwo<__uint64_t,unsigned char,Type_Distance,Type_Numeric>();
+                    else if (me1->length <= 16) orderTwo<__uint64_t,unsigned short,Type_Distance,Type_Numeric>();
+                    else if (me1->length <= 32) orderTwo<__uint64_t,uint32_t,Type_Distance,Type_Numeric>();
+                    else if (me1->length <= 64) orderTwo<__uint64_t,uint64_t,Type_Distance,Type_Numeric>();
                     else orderTwo<__uint64_t,__uint128_t,Type_Distance,Type_Numeric>();
                     break;
                 case storage_type_float16:
@@ -680,24 +680,24 @@ void OrderModel::orderOnTwo() {
             }
             break;
         case storage_type_enum:
-            switch (me1.s) {
+            switch (me1->s) {
                 case storage_type_null:
                 case storage_type_unknown:
                     return;
                 case storage_type_signed:
                 case storage_type_signed_fixed_point:
-                    if (me1.length <= 8) orderTwo<enumType,char,Type_Enum,Type_Numeric>();
-                    else if (me1.length <= 16) orderTwo<enumType,short,Type_Enum,Type_Numeric>();
-                    else if (me1.length <= 32) orderTwo<enumType,int32_t,Type_Enum,Type_Numeric>();
-                    else if (me1.length <= 64) orderTwo<enumType,int64_t,Type_Enum,Type_Numeric>();
+                    if (me1->length <= 8) orderTwo<enumType,char,Type_Enum,Type_Numeric>();
+                    else if (me1->length <= 16) orderTwo<enumType,short,Type_Enum,Type_Numeric>();
+                    else if (me1->length <= 32) orderTwo<enumType,int32_t,Type_Enum,Type_Numeric>();
+                    else if (me1->length <= 64) orderTwo<enumType,int64_t,Type_Enum,Type_Numeric>();
                     else orderTwo<enumType,__int128_t,Type_Enum,Type_Numeric>();
                     break;
                 case storage_type_unsigned:
                 case storage_type_unsigned_fixed_point:
-                    if (me1.length <= 8) orderTwo<enumType,unsigned char,Type_Enum,Type_Numeric>();
-                    else if (me1.length <= 16) orderTwo<enumType,unsigned short,Type_Enum,Type_Numeric>();
-                    else if (me1.length <= 32) orderTwo<enumType,uint32_t,Type_Enum,Type_Numeric>();
-                    else if (me1.length <= 64) orderTwo<enumType,uint64_t,Type_Enum,Type_Numeric>();
+                    if (me1->length <= 8) orderTwo<enumType,unsigned char,Type_Enum,Type_Numeric>();
+                    else if (me1->length <= 16) orderTwo<enumType,unsigned short,Type_Enum,Type_Numeric>();
+                    else if (me1->length <= 32) orderTwo<enumType,uint32_t,Type_Enum,Type_Numeric>();
+                    else if (me1->length <= 64) orderTwo<enumType,uint64_t,Type_Enum,Type_Numeric>();
                     else orderTwo<enumType,__uint128_t,Type_Enum,Type_Numeric>();
                     break;
                 case storage_type_float16:

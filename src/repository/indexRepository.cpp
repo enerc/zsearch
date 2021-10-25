@@ -61,18 +61,21 @@ shared_ptr<IndexManager> IndexRepository::getIndex(const string &_index,const st
 }
 
 shared_ptr<IndexManager> IndexRepository::getIndex(const string &_index,const string &key,const mapping::mapping_entry &me) {
-	shared_ptr<IndexManager> ret;
+	shared_ptr<IndexManager> ret = nullptr;
 	string hash = key;
 	auto s = getKey(_index,hash);
 	mu.lock();
 	auto o = indexMap.find(s);
 	if (o != indexMap.end()) {
 		ret = o->second;
-	} else {
-		ret = make_shared<IndexManager>(_index,hash,key,me);
-		indexMap.emplace(s,ret);
 	}
 	mu.unlock();
+	if (ret == nullptr) {
+		ret = make_shared<IndexManager>(_index,hash,key,me);
+		mu.lock();
+		indexMap.emplace(s,ret);
+		mu.unlock();
+	}
 	return ret;
 }
 
@@ -90,6 +93,7 @@ vector<shared_ptr<IndexChunk>> IndexRepository::getChunksForWrite(const string &
 		if (im == nullptr) {
 		    Log::error("Index "+string(i.data(),i.size())+ " not found !");
 		    ret.resize(0);
+		    mu.unlock();
 		    return ret;
 		}
 		ret[idx] = im->lockChunkForWrite();

@@ -27,14 +27,15 @@ std::shared_ptr<IndexDefinition> IndexDefinitionManager::getIndex(const string_v
 	if (ret == nullptr) {
 		ret = make_shared<IndexDefinition>(s);
 		if (ret->fromDisk(false)) {
+		    ret->updateIndexRef();
 		    mu.lock();
 		    indexDefinitionMap[s] = ret;
 		    mu.unlock();
-		    ret->updateIndexRef();
 		} else {
 		    ret = nullptr;
 		}
 	}
+	mu.unlock();
 	return ret;
 }
 

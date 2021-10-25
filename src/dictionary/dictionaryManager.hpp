@@ -34,7 +34,7 @@ private:
     hash_storage	*hs;	// mmap hash
     strings_properties	*st;
     uint32_t        maxArraySize;
-    static constexpr uint64_t chunkIncreaseSize = 1024;
+    static constexpr uint64_t chunkIncreaseSize = 4096;
     std::mutex	    mu;
 
 

@@ -172,10 +172,10 @@ private:
 	IndexStructure *storage;
 	std::shared_ptr<dictionary::DictionaryManager> dicManager;
 	double 		scale;
-    size_t      indexSize;
+    size_t      indexSize{};
     bool        isaConstant;
     std::shared_ptr<StorageModel> storageModel;
-    static constexpr uint64_t chunkIncreaseSize = 1024;   // must be enough given IMPORT_BUFFER_SIZE and line size
+    static constexpr uint64_t chunkIncreaseSize = 4096;   // must be enough given IMPORT_BUFFER_SIZE and line size
 
 
     [[nodiscard]] std::string getFileFolder() const;

@@ -195,7 +195,6 @@ void MappingParser::decodeString(const GenericValue<rapidjson::UTF8<> >&val)  {
 }
 
 void MappingParser::decodeDispatch(const GenericValue<rapidjson::UTF8<> >&val)  {
-	//cout << "path:" << string(path,pathLength) <<  "  type:" << val.GetType() << endl;
 	switch (val.GetType()) {
 	case kNullType:
 		decodeNull(val);
@@ -279,7 +278,6 @@ void MappingParser::dump() const {
 
 void MappingParser::joinResolver() {
     for (auto &e : m->getIndexFields()) {
-        cout << "joinResolver " << e << " len " << endl;
         auto f = m->getEntryNoBoo(e);
         if (f.flags&EntryJoinSet) {
             if (f.joinIndex.empty()) {

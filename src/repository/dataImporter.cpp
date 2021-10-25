@@ -62,12 +62,10 @@ void DataImporter::processJsonInput(const dom::element &doc) {
 	capacity ++;
 
 	if (capacity == CHUNK_SIZE) {
-		//cout << "CHUNK FULL ";
 		// chunks full
 		IndexRepository::getInstance()->releaseLockedChunks(index,myChunks);
 		// a new chunks
 		myChunks = IndexRepository::getInstance()->getChunksForWrite(index,capacity);
-		//cout <<  "New capacity " << capacity << endl;
 	}
 	documentImported++;
 }
@@ -81,8 +79,8 @@ void DataImporter::processJsonObject(const dom::object &doc) {
 			return;
 		}
         if (setColumnSet(idx)) {
-            const auto &me = id->getIndexDefinition(idx);
-            if ((me.flags & EntryJoinSet) != 0) {
+            const auto *me = id->getIndexDefinition(idx);
+            if ((me->flags & EntryJoinSet) != 0) {
                 // should not be here ....
             } else {
                 processJsonObjectDefined(e, me);
@@ -93,13 +91,13 @@ void DataImporter::processJsonObject(const dom::object &doc) {
 	}
 }
 
-void DataImporter::processJsonObjectDefined(const dom::key_value_pair &e, const mapping_entry &me) {
-    if (me.t == index_type_none) {
+void DataImporter::processJsonObjectDefined(const dom::key_value_pair &e, const mapping_entry *me) {
+    if (me->t == index_type_none) {
         Log::error(queryStatus,"DataImporter : invalid key "+string(e.key));
         documentErrors++;
     } else {
-        uint32_t length = me.length;
-        switch (me.s) {
+        uint32_t length = me->length;
+        switch (me->s) {
             case storage_type_null:
                 break;
             case storage_type_signed:
@@ -238,15 +236,15 @@ void DataImporter::processJsonObjectDefined(const dom::key_value_pair &e, const 
     }
 }
 
-void DataImporter::processJsonObjectJoin(int z, const mapping_entry &me) {
+void DataImporter::processJsonObjectJoin(int z, const mapping_entry *me) {
     shared_ptr<DataJoin> p = joins.at(z);
     if (p == nullptr) {
-        p = DataJoinFactory::getInstance(me.joinIndex,me.joinRemoteKey,me.joinValue,queryStatus);
+        p = DataJoinFactory::getInstance(me->joinIndex,me->joinRemoteKey,me->joinValue,queryStatus);
         joins.at(z) = p;
     }
     if (p == nullptr) return;
 
-    uint64_t m = id->getIndexOffset(me.joinThisKey);
+    uint64_t m = id->getIndexOffset(me->joinThisKey);
     bool isNull;
     bool endOfDocument;
     bool isDeleted;
@@ -300,16 +298,16 @@ __int128_t DataImporter::convertSigned(uint32_t length, const dom::element &e, c
 	}
 }
 
-__uint128_t DataImporter::convertUnsigned(uint32_t length, const dom::element &e, const string_view &f,const mapping::mapping_entry &me)  {
-    if (me.t == mapping::index_type_date || me.t == mapping::index_type_date_nano) {
-        if (me.format.empty()) {
+__uint128_t DataImporter::convertUnsigned(uint32_t length, const dom::element &e, const string_view &f,const mapping::mapping_entry *me)  {
+    if (me->t == mapping::index_type_date || me->t == mapping::index_type_date_nano) {
+        if (me->format.empty()) {
             Log::error(queryStatus, string("You must provide a date format for field : ") + f.data());
             documentErrors++;
             return 0;
         }
-        if (me.t == mapping::index_type_date ) {
+        if (me->t == mapping::index_type_date ) {
             bool fail;
-            uint64_t d =  stringToDate(me.isFTDate,false,me.format,e.get_string(),fail);
+            uint64_t d =  stringToDate(me->isFTDate,false,me->format,e.get_string(),fail);
             if (fail) {
                 string_view t(e.get_string());;
                 Log::error(queryStatus, string("Wrong date format for field : ") + f.data() + " value is:" + string(t.data(), t.size()));
@@ -319,7 +317,7 @@ __uint128_t DataImporter::convertUnsigned(uint32_t length, const dom::element &e
             return d;
         } else {
             bool fail;
-            uint64_t d =  stringToDate(me.isFTDate,true,me.format,e.get_string(),fail);
+            uint64_t d =  stringToDate(me->isFTDate,true,me->format,e.get_string(),fail);
             if (fail) {
                 string_view t(e.get_string());;
                 Log::error(queryStatus, string("Wrong date format for field : ") + f.data() + " value is:" + string(t.data(),t.size()));
@@ -388,8 +386,8 @@ void DataImporter::completeColumnSet() {
             int k;
             while ((k=__builtin_ffsl((int64_t)j)) > 0) {
                 int z = i*64+k-1;
-                mapping_entry e = id->getIndexDefinition(z);
-                if ((e.flags & EntryJoinSet) != 0) {
+                const mapping_entry *e = id->getIndexDefinition(z);
+                if ((e->flags & EntryJoinSet) != 0) {
                     processJsonObjectJoin(z,e);
                 } else {
                     myChunks[z]->addNull(true);
