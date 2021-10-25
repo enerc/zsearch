@@ -125,6 +125,7 @@ As simple as a cmake project:
 	cd build 
 	cmake .. 
 	make -j #cores
+	cp ../src/config.txt . (edit this file for your needs)
 
 Dependancies: 
 
