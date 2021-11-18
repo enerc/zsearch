@@ -43,6 +43,24 @@ def create_index_function(q,r,s):
         print("\033[38;5;243m"+rr+"\033[38;5;0m", end = "   ")
     print()
 
+def genDef_function(q, r, s):
+    start = time.time()
+    qe = urllib.parse.quote(q)
+    conn.request("GET", "/?genDefinition=" + qe)
+    response = conn.getresponse()
+    rr = response.read().decode('UTF-8')
+    request_time = 1000*(time.time() - start)
+    print("\033[38;5;250m", end='')
+    if rr == r:
+        print("\033[38;5;82mOK", end = "")
+    else:
+        print("\033[38;5;196mKO", end = "")
+    print("\033[0m %.0lfms" % request_time, "/?genDefinition="+q, end = "   ")
+    if rr != r:
+        print("\033[38;5;243m"+rr+"\033[38;5;1m", end = "   ")
+    print()
+
+
 
 if not os.path.exists("taxis.json"):
     print("File taxis.json is missing")
@@ -136,7 +154,7 @@ q = "rate_codes"
 s = {
     "mappings": {
         "properties": {
-            "id" : { "type": "text"},
+            "id" : { "type": "uint7_t"},
             "description": { "type": "text"}
         }
     }
@@ -174,24 +192,24 @@ q = "nyc_taxis"
 s = {
     "mappings": {
         "properties": {
-            "total_amount": { "type": "int30_t", "scale" : 2},
-            "improvement_surcharge": { "type": "uint5_t", "scale": 1 },
-            "pickup_location": { "type": "location"},
-            "pickup_datetime": { "type": "date", "format" : "%F %T"},
-            "trip_type": { "type": "uint3_t"},
-            "dropoff_datetime": { "type": "date", "format" : "%F %T"},
-            "rate_code_id":  { "type": "enum" },
-            "tolls_amount": { "type": "uint14_t", "scale": 2 },
-            "dropoff_location": { "type": "location"},
-            "passenger_count": { "type": "uint3_t" },
-            "fare_amount": { "type": "int14_t", "scale": 2 },
-            "extra": { "type": "int20_t", "scale": 2 },
-            "trip_distance": { "type": "uint17_t", "scale": 2 },
-            "tip_amount": { "type": "int30_t", "scale": 2 },
-            "store_and_fwd_flag": { "type": "enum" },
-            "payment_type": { "type": "enum" , "max_array_size" : 10},
-            "mta_tax": { "type": "uint14_t", "scale": 2 },
-            "vendor_id": { "type": "uint3_t" },
+            "dropoff_datetime" : { "type": "date", "format" : "%F %T"},
+            "dropoff_location" : { "type": "location" },
+            "extra" : { "type": "int18_t" , "scale" : 2},
+            "fare_amount" : { "type": "int28_t" , "scale" : 2},
+            "improvement_surcharge" : { "type": "uint14_t" , "scale" : 2},
+            "mta_tax" : { "type": "int18_t" , "scale" : 3},
+            "passenger_count" : { "type": "uint4_t" },
+            "payment_type" : { "type": "uint3_t" },
+            "pickup_datetime" : { "type": "date", "format" : "%F %T"},
+            "pickup_location" : { "type": "location" },
+            "rate_code_id" : { "type": "uint7_t" },
+            "store_and_fwd_flag" : { "type": "enum" },
+            "tip_amount" : { "type": "int34_t" , "scale" : 3},
+            "tolls_amount" : { "type": "int19_t" , "scale" : 2},
+            "total_amount" : { "type": "int30_t" , "scale" : 2},
+            "trip_distance" : { "type": "uint35_t" , "scale" : 2},
+            "trip_type" : { "type": "uint2_t" },
+            "vendor_id" : { "type": "uint2_t" },
             "vendor_name": { "type": "join" , "index" : "taxi_trip_type", "this_key": "trip_type", "join_key" : "id" , "value" : "name"},
             "rate_code": { "type": "join" , "index" : "rate_codes", "this_key": "rate_code_id", "join_key" : "id", "value" : "description"}
         }
@@ -639,3 +657,21 @@ r = '''{"id":1,"names":["Chicago0","Chicago1"],"elevation":[35,45],"temperature"
 {"id":5,"names":["New York0","New York1","New York2","New York3"],"elevation":[5,15],"temperature":24}
 '''
 query_function(q, r, s)
+
+q="tests/english_words.json"
+s = ""
+r = '''{
+  "mappings": {
+      "properties": {
+         "address" : { "type": "enum" },
+         "age" : { "type": "uint7_t" },
+         "name" : { "type": "enum" },
+         "tags" : { "type": "enum"  , "max_array_size" : 3},
+         "text1" : { "type": "enum" },
+         "text2" : { "type": "enum" }
+      }
+   }
+}
+'''
+genDef_function(q, r, s)
+

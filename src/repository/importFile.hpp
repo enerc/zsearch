@@ -23,11 +23,12 @@ public:
 		getFileType(queryStatus);
 	}
 	bool	doImport(std::shared_ptr<queries::QueryStatus>& queryStatus);
-private:
+protected:
+    FileType fileType;
 	std::string path;
 	std::string index;
-	FileType fileType;
 
+private:
 	bool  getFileType(std::shared_ptr<queries::QueryStatus>& queryStatus);
 };
 }

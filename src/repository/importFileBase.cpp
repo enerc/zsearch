@@ -33,7 +33,7 @@ bool ImportFileBase::openFile() {
     struct stat stat_buf{};
     int rc = stat(path.c_str(), &stat_buf);
     if (rc != 0) {
-    	Log::error("Import file FAILED for file "+path);
+    	Log::error(queryStatus,"Import file FAILED for file "+path);
     	return false;
 	}
     len = stat_buf.st_size;
@@ -43,7 +43,7 @@ bool ImportFileBase::openFile() {
 	fd =  open(path.c_str(), O_RDONLY);
 #endif
 	if (fd < 0 ) {
-    	Log::error("Import file FAILED for file "+path+ " cannot open this file");
+    	Log::error(queryStatus, "Import file FAILED for file "+path+ " cannot open this file");
     	return false;
 	}
 	return true;
@@ -54,20 +54,20 @@ bool  ImportFileBase::initImport() {
 	if (processor_count == 0) {
 		processor_count = 1;
 	}
-
-	workerInitParams  = nullptr;
-	workerInitParams = (WorkerInitParam*) malloc(processor_count*sizeof(WorkerInitParam));
-	if (workerInitParams == nullptr) {
-		Log::error("Failed to create file import workers. Allocated "+ to_string(processor_count*sizeof(WorkerInitParam)));
-		return false;
+    bool ok = true;
+	try {
+	    workerInitParams = new WorkerInitParam[processor_count]();
+	} catch (const bad_alloc& e) {
+		Log::error(queryStatus, "Failed to create file import workers. Allocated "+ to_string(processor_count*sizeof(WorkerInitParam)));
+		ok = false;
 	}
-	return true;
+	return ok;
 }
 
 bool ImportFileBase::estimateLineWorkSize() {
 	const char *p = (const char*)memchr((const void*)buffers[workingBuffer],0xa,usefullBufferSize[workingBuffer]);
 	if (p == nullptr) {
-	   	Log::error("Import file "+path+ " has no new line character");
+	   	Log::error(queryStatus, "Import file "+path+ " has no new line character");
 		return false;
 	}
 	lineSize= p - buffers[workingBuffer];
@@ -144,7 +144,7 @@ bool ImportFileBase::doImport() {
 		}
 		threads.clear();
 	}
-	free(workerInitParams);
+	delete[] workerInitParams;
 	workerInitParams = nullptr;
 	free(buffer0);
 	buffer0 = nullptr;
@@ -159,13 +159,13 @@ bool ImportFileBase::doImport() {
 bool ImportFileBase::allocBuffers() {
 	buffer0 = (char*) aligned_alloc(getpagesize(),IMPORT_BUFFER_SIZE);
 	if (buffer0 == nullptr) {
-    	Log::error("Import file FAILED for file "+path+ " cannot allocate buffer memory");
+    	Log::error(queryStatus,"Import file FAILED for file "+path+ " cannot allocate buffer memory");
     	return false;
 	}
 	buffers[0] = buffer0;
 	buffer1 = (char*) aligned_alloc(getpagesize(),IMPORT_BUFFER_SIZE);
 	if (buffer1 == nullptr) {
-    	Log::error("Import file FAILED for file "+path+ " cannot allocate buffer memory");
+    	Log::error(queryStatus,"Import file FAILED for file "+path+ " cannot allocate buffer memory");
     	free(buffer0);
     	return false;
 	}

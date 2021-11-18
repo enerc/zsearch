@@ -8,6 +8,10 @@
 #include "../queries/queryStatus.hpp"
 #include "../mapping/indexDefinitionManager.hpp"
 
+namespace tools {
+    class GenDefinitionBase;
+}
+
 namespace repository {
 
 class ImportFileBase;
@@ -29,6 +33,7 @@ public:
 	virtual bool  fetch() = 0;
 	virtual bool  decodeHeader() = 0;
 	virtual ~ImportFileBase() = default;
+	friend class tools::GenDefinitionBase;
 
 protected:
 	uint32_t processor_count = 1;

@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS "-march=native -DNDEBUG -g ")
+set(CMAKE_CXX_FLAGS "-march=native -DNDEBUG -g -O3")
 SET(ASM_OPTIONS "-x assembler-with-cpp")
 enable_language(ASM)
 
@@ -27,6 +27,7 @@ include(src/mapping/CMakeLists.txt)
 include(src/devices/CMakeLists.txt)
 include(src/queries/CMakeLists.txt)
 include(src/sql/CMakeLists.txt)
+include(src/tools/CMakeLists.txt)
 include(tests/CMakeLists.txt)
 
 list(APPEND zearch_sources

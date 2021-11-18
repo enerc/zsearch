@@ -77,7 +77,9 @@ If you need professional services to speed up your project or to build new searc
      - the column which is imported - "value"
      - example: "vendor_name": { "type": "join" , "index" : "taxi_trip_type", "this_key": "trip_type", "join_key" : "id" , "value" : "name"}
      
-The best is to have a look at 'queries.py' which gives a good example of supported syntax.     
+The best is to have a look at file 'queries.py' which gives a good example of supported syntax. 
+
+Index definition can be obtained from a data file with  /?genDefinition=file.json|lz4. See queries.py for details.
 
 ### JSON format
 There are two suported JSON file format for imports:

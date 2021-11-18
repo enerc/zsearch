@@ -10,6 +10,7 @@
 #include "../../sql/SQLParser.hpp"
 #include "../../queries/builders/ast.hpp"
 #include "../../mapping/mappingParser.hpp"
+#include "../../tools/genDefinition.hpp"
 
 using namespace std;
 using namespace queries;
@@ -203,6 +204,28 @@ void Server::processQueryCreateTable(struct MHD_Connection *connection,struct MH
     }
 }
 
+MHD_Result Server::processGenDefinition(struct MHD_Connection *connection,struct MHD_Response **response,const char *q,bool isAdmin) {
+    auto o = MHD_get_connection_info(connection,MHD_CONNECTION_INFO_CLIENT_ADDRESS);
+    string myIp = inet_ntoa(((sockaddr_in*)o->client_addr)->sin_addr);
+    Log::debug("Asking for index definition of "+string(q)+" ["+myIp+"]");
+
+    const char *fileName = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "genDefinition");
+    MHD_Result ret;
+
+    if (fileName == nullptr) {
+        qs->customMessage = "Correct syntax is /?getDefinition=fileName";
+        qs->status = HTTP_500;
+        *response = MHD_create_response_from_buffer(qs->customMessage.size(), (void *) qs->customMessage.c_str(), MHD_RESPMEM_MUST_COPY);
+        ret = MHD_queue_response (connection, MHD_HTTP_BAD_REQUEST, *response);
+    } else {
+        tools::GenDefinition genDef(qs,fileName,"");
+        const string s = genDef.getDefinition(qs);
+        *response = MHD_create_response_from_buffer(s.size(), (void *) s.c_str(), MHD_RESPMEM_MUST_COPY);
+        ret = MHD_queue_response (connection, qs->status, *response);
+   }
+    return ret;
+}
+
 MHD_Result Server::answer_to_user_connection(void *cls, struct MHD_Connection *connection, const char *url, const char *method, const char *version, const char *upload_data,
                                  size_t *upload_data_size, void **con_cls) {
     static int aptr;
@@ -227,9 +250,12 @@ MHD_Result Server::answer_to_user_connection(void *cls, struct MHD_Connection *c
     struct MHD_Response *response;
     MHD_Result ret;
     const char *q = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "query");
+    const char *def = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "genDefinition");
 
     if (q != nullptr) {
         ret = processQuery(connection,&response,q,adminDaemon == nullptr);
+    } else if (def != nullptr) {
+        ret = processGenDefinition(connection,&response,def,adminDaemon == nullptr);
     } else {
         if (adminDaemon != nullptr ) {
             static string s = "No query found in http user request. Use query=select A from Foo where ....";
@@ -273,10 +299,13 @@ MHD_Result Server::answer_to_admin_connection(void *cls, struct MHD_Connection *
     struct MHD_Response *response;
     MHD_Result ret;
     const char *q0 = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "query");
+    const char *def = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "genDefinition");
 
     if (q0 != nullptr) {
         ret = processQuery(connection,&response,q0,true);
-    } else {
+    } else if (def != nullptr) {
+        ret = processGenDefinition(connection,&response,def,adminDaemon == nullptr);
+   } else {
         if (string(url) == string(CMD_CREATE_INDEX)) {
             if (*upload_data_size > 0) {
                 string s(upload_data,*upload_data_size);
