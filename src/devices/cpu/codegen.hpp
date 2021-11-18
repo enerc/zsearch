@@ -311,7 +311,7 @@ private:
     void load_src64(int bank1);
     void load_src128(int bank1);
     void f16Tof32(int srcIndex, int bank);
-    void addConvertor(int len, int targetLen, bool isaFloat, bool targetIsFloat,bool isSigned, int bank);
+    bool addConvertor(int len, int targetLen, bool isaFloat, bool targetIsFloat,bool isSigned, int bank);
     void scalef(float factor);
     void scaled(double factor);
     void loadCenter(uint64_t);

@@ -2938,15 +2938,17 @@ void Codegen::loadConstant64(const __uint128_t &cst,int bank) {
     addMemoryOffsetL(v);
     int INSTR1[] = {0xc4, 0x61, 0xf9, 0x6e, 0xc0};//    vmovq  %rax,%xmm8
     add(INSTR1, size(INSTR1));
-    int INSTR2[] = {0xc4 ,0xc2 ,0x7d ,0x59 ,0xc0};//       	vpbroadcastq %xmm8,%ymm0
+    int INSTR2[] = {0xc4 ,0xc2 ,0x7d ,0x59 ,0xc0};//   	vpbroadcastq %xmm8,%ymm0
     add(INSTR2, size(INSTR2));
-    int INSTR3[] = {0xc4 ,0xc2 ,0x7d ,0x59 ,0xc8};//       	vpbroadcastq %xmm8,%ymm1
+    int INSTR3[] = {0xc5, 0xfd, 0x7f, 0x86};//         	vmovdqa %ymm0,(%rsi)
     add(INSTR3, size(INSTR3));
-    int INSTR4[] = {0xc4 ,0xc2 ,0x7d ,0x59 ,0xd0};//       	vpbroadcastq %xmm8,%ymm2
-    add(INSTR4, size(INSTR4));
-    int INSTR5[] = {0xc4 ,0xc2 ,0x7d ,0x59 ,0xd8};//       	vpbroadcastq %xmm8,%ymm3
-    add(INSTR5, size(INSTR5));
-    save(64,bank);
+    addMemoryOffset(bank, 0);
+    add(INSTR3, size(INSTR3));
+    addMemoryOffset(bank, 1);
+    add(INSTR3, size(INSTR3));
+    addMemoryOffset(bank, 2);
+    add(INSTR3, size(INSTR3));
+    addMemoryOffset(bank, 3);
 }
 
 void Codegen::loadConstant128(const __uint128_t &cst,int bank) {
@@ -4365,16 +4367,26 @@ void Codegen::fetchVariable(int len,bool isFloat, bool isSigned, int targetLen, 
         unpack(len,isSigned);
     }
     int alen = getKernelLengthForColumn(len);
-    addConvertor(alen, targetLen, isFloat, targetIsFloat,isSigned, bank);
-    if (scale > 1) {
+    bool needReload = addConvertor(alen, targetLen, isFloat, targetIsFloat,isSigned, bank);
+    if (scale != 1) {
         if (targetLen == 32 && targetIsFloat) {
+            if (needReload) {
+                load_src32(bank);
+                needReload = false;
+            }
             scalef((float)scale);
         }
         if (targetLen == 64 && targetIsFloat) {
+            if (needReload) {
+                load_src64(bank);
+                needReload = false;
+            }
             scaled(scale);
         }
     }
-    save(targetLen,bank);
+    if (!needReload) {
+        save(targetLen,bank);
+    }
 }
 
 void Codegen::loadConstant(__uint128_t &cst,int len, bool isFloat, int bank, bool isInClause) {
@@ -4933,28 +4945,28 @@ void Codegen::cvt_signed_64_double(int bank, bool reload) {
     int INSTR0[] = {0xc5 ,0xc0 ,0x57 ,0xff};//  vxorps %xmm7,%xmm7,%xmm7
     add(INSTR0, size(INSTR0));
     {
-        int INSTR1[] = {0xc5 ,0xc3 ,0x2a ,0x86};// 	vcvtsi2sdl 0x1234(%rsi),%xmm7,%xmm0
+        int INSTR1[] = {0xc4 ,0xe1 ,0xc3 ,0x2a ,0x86};// 	vcvtsi2sdq 0x1234(%rsi),%xmm7,%xmm0
         add(INSTR1, size(INSTR1));
         addMemoryOffset(offset+0);
-        int INSTR2[] = {0xc5 ,0xc3 ,0x2a ,0x8e};// 	vcvtsi2sdl 0x1234(%rsi),%xmm7,%xmm1
+        int INSTR2[] = {0xc4 ,0xe1 ,0xc3 ,0x2a ,0x8e};// 	vcvtsi2sdq 0x1234(%rsi),%xmm7,%xmm1
         add(INSTR2, size(INSTR2));
         addMemoryOffset(offset+1*8);
-        int INSTR3[] = {0xc5 ,0xc3 ,0x2a ,0x96};// 	vcvtsi2sdl 0x1234(%rsi),%xmm7,%xmm2
+        int INSTR3[] = {0xc4 ,0xe1 ,0xc3 ,0x2a ,0x96};// 	vcvtsi2sdq 0x1234(%rsi),%xmm7,%xmm2
         add(INSTR3, size(INSTR3));
         addMemoryOffset(offset+2*8);
-        int INSTR4[] = {0xc5 ,0xc3 ,0x2a ,0x9e};// 	vcvtsi2sdl 0x1234(%rsi),%xmm7,%xmm3
+        int INSTR4[] = {0xc4 ,0xe1 ,0xc3 ,0x2a ,0x9e};// 	vcvtsi2sdq 0x1234(%rsi),%xmm7,%xmm3
         add(INSTR4, size(INSTR4));
         addMemoryOffset(offset+3*8);
-        int INSTR5[] = {0xc5 ,0xc3 ,0x2a ,0xa6};// 	vcvtsi2sdl 0x1234(%rsi),%xmm7,%xmm4
+        int INSTR5[] = {0xc4 ,0xe1 ,0xc3 ,0x2a ,0xa6};// 	vcvtsi2sdq 0x1234(%rsi),%xmm7,%xmm4
         add(INSTR5, size(INSTR5));
         addMemoryOffset(offset+4*8);
-        int INSTR6[] = {0xc5 ,0xc3 ,0x2a ,0xae};// 	vcvtsi2sdl 0x1234(%rsi),%xmm7,%xmm5
+        int INSTR6[] = {0xc4 ,0xe1 ,0xc3 ,0x2a ,0xae};// 	vcvtsi2sdq 0x1234(%rsi),%xmm7,%xmm5
         add(INSTR6, size(INSTR6));
         addMemoryOffset(offset+5*8);
-        int INSTR7[] = {0xc5 ,0xc3 ,0x2a ,0xb6};// 	vcvtsi2sdl 0x1234(%rsi),%xmm7,%xmm6
+        int INSTR7[] = {0xc4 ,0xe1 ,0xc3 ,0x2a ,0xb6};// 	vcvtsi2sdq 0x1234(%rsi),%xmm7,%xmm6
         add(INSTR7, size(INSTR7));
         addMemoryOffset(offset+6*8);
-        int INSTR8[] = {0xc5 ,0xc3 ,0x2a ,0xbe};// 	vcvtsi2sdl 0x1234(%rsi),%xmm7,%xmm7
+        int INSTR8[] = {0xc4 ,0xe1 ,0xc3 ,0x2a ,0xbe};// 	vcvtsi2sdq 0x1234(%rsi),%xmm7,%xmm7
         add(INSTR8, size(INSTR8));
         addMemoryOffset(offset+7*8);
         int INSTR9[] = {0xc5 ,0xfb ,0x11 ,0x86};// 	vmovsd %xmm0,0x1234(%rsi)
@@ -4983,28 +4995,28 @@ void Codegen::cvt_signed_64_double(int bank, bool reload) {
         addMemoryOffset(offset+7*8);
     }
     {
-        int INSTR1[] = {0xc5 ,0xc3 ,0x2a ,0x86};// 	vcvtsi2sdl 0x1234(%rsi),%xmm7,%xmm0
+        int INSTR1[] = {0xc4 ,0xe1 ,0xc3 ,0x2a ,0x86};// 	vcvtsi2sdq 0x1234(%rsi),%xmm7,%xmm0
         add(INSTR1, size(INSTR1));
         addMemoryOffset(offset+8*8);
-        int INSTR2[] = {0xc5 ,0xc3 ,0x2a ,0x8e};// 	vcvtsi2sdl 0x1234(%rsi),%xmm7,%xmm1
+        int INSTR2[] = {0xc4 ,0xe1 ,0xc3 ,0x2a ,0x8e};// 	vcvtsi2sdq 0x1234(%rsi),%xmm7,%xmm1
         add(INSTR2, size(INSTR2));
         addMemoryOffset(offset+9*8);
-        int INSTR3[] = {0xc5 ,0xc3 ,0x2a ,0x96};// 	vcvtsi2sdl 0x1234(%rsi),%xmm7,%xmm2
+        int INSTR3[] = {0xc4 ,0xe1 ,0xc3 ,0x2a ,0x96};// 	vcvtsi2sdq 0x1234(%rsi),%xmm7,%xmm2
         add(INSTR3, size(INSTR3));
         addMemoryOffset(offset+10*8);
-        int INSTR4[] = {0xc5 ,0xc3 ,0x2a ,0x9e};// 	vcvtsi2sdl 0x1234(%rsi),%xmm7,%xmm3
+        int INSTR4[] = {0xc4 ,0xe1 ,0xc3 ,0x2a ,0x9e};// 	vcvtsi2sdq 0x1234(%rsi),%xmm7,%xmm3
         add(INSTR4, size(INSTR4));
         addMemoryOffset(offset+11*8);
-        int INSTR5[] = {0xc5 ,0xc3 ,0x2a ,0xa6};// 	vcvtsi2sdl 0x1234(%rsi),%xmm7,%xmm4
+        int INSTR5[] = {0xc4 ,0xe1 ,0xc3 ,0x2a ,0xa6};// 	vcvtsi2sdq 0x1234(%rsi),%xmm7,%xmm4
         add(INSTR5, size(INSTR5));
         addMemoryOffset(offset+12*8);
-        int INSTR6[] = {0xc5 ,0xc3 ,0x2a ,0xae};// 	vcvtsi2sdl 0x1234(%rsi),%xmm7,%xmm5
+        int INSTR6[] = {0xc4 ,0xe1 ,0xc3 ,0x2a ,0xae};// 	vcvtsi2sdq 0x1234(%rsi),%xmm7,%xmm5
         add(INSTR6, size(INSTR6));
         addMemoryOffset(offset+13*8);
-        int INSTR7[] = {0xc5 ,0xc3 ,0x2a ,0xb6};// 	vcvtsi2sdl 0x1234(%rsi),%xmm7,%xmm6
+        int INSTR7[] = {0xc4 ,0xe1 ,0xc3 ,0x2a ,0xb6};// 	vcvtsi2sdq 0x1234(%rsi),%xmm7,%xmm6
         add(INSTR7, size(INSTR7));
         addMemoryOffset(offset+14*8);
-        int INSTR8[] = {0xc5 ,0xc3 ,0x2a ,0xbe};// 	vcvtsi2sdl 0x1234(%rsi),%xmm7,%xmm7
+        int INSTR8[] = {0xc4 ,0xe1 ,0xc3 ,0x2a ,0xbe};// 	vcvtsi2sdl 0x1234(%rsi),%xmm7,%xmm7
         add(INSTR8, size(INSTR8));
         addMemoryOffset(offset+15*8);
         int INSTR9[] = {0xc5 ,0xfb ,0x11 ,0x86};// 	vmovsd %xmm0,0x1234(%rsi)
@@ -5284,7 +5296,8 @@ void Codegen::in64(int bank) {
     merge_null();
 }
 
-void Codegen::addConvertor(int alen, int targetLen, bool isf, bool targetIsFloat, bool isSigned, int bank) {
+bool Codegen::addConvertor(int alen, int targetLen, bool isf, bool targetIsFloat, bool isSigned, int bank) {
+    bool needReload = false;
     if (isf) {
         if (alen==32 && targetLen == 64) {
             cvt_float_double(bank,false);
@@ -5299,9 +5312,11 @@ void Codegen::addConvertor(int alen, int targetLen, bool isf, bool targetIsFloat
             }
             if (alen==64 && targetLen == 64) {
                 cvt_signed_64_double(bank,false);
+                needReload = true;
             }
             if (alen==128 && targetLen == 64) {
                 cvt_signed_128_double(bank,false);
+                needReload = true;
             }
         } else {
             if (isSigned) {
@@ -5327,6 +5342,7 @@ void Codegen::addConvertor(int alen, int targetLen, bool isf, bool targetIsFloat
             }
         }
     }
+    return needReload;
 }
 
 void Codegen::scalef(float factor) {
