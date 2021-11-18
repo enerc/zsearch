@@ -342,6 +342,7 @@ inline __int128_t signExtend(const __int128_t &a,uint32_t len ) {
 }
 
 [[maybe_unused]] inline int getBitLength(const __uint128_t &a) {
+    if (a == 0) return 1;
     int ret = 128;
     int k = 127;
     while (((a>>k)&1) ==0) {
