@@ -195,16 +195,13 @@ void ComparatorModel::gen(const std::vector<std::shared_ptr<BaseModel>> &el,quer
             case ClassInstanceColumnRef : {
                 shared_ptr<IndexManager> im =  IndexRepository::getInstance()->getIndex(ast->getColumnMapping()->getIndexName(), e->values.at(0).at(0));
                 bool isf = isFloat(im->getStorageType()) || isDouble(im->getStorageType());
-                if (extraScale.find(e.get()) != extraScale.end()) {
-                    currentScaling *= extraScale.at(e.get());       // case of column divided by column
-                }
                 if (im->getStorageType() == mapping::storage_type_enum) {
                     // Code generated for each chunk
                 } else if (im->getStorageType() == mapping::storage_type_geopoint) {
                     // Geopoint stored as a packed 64 bit int
                     codegen.fetchVariable(64,false,false,64,false,sourceIndex,bank,1);
                 } else {
-                    codegen.fetchVariable((int)im->getLength(),isf,isSignedInt(im->getStorageType()),len,isaFloat,sourceIndex,bank,currentScaling/im->getScale());
+                    codegen.fetchVariable((int)im->getLength(),isf,isSignedInt(im->getStorageType()),len,isaFloat,sourceIndex,bank,maxScaling/im->getScale());
                 }
                 sourceIndex++;
             }
