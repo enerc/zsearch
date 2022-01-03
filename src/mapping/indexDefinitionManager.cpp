@@ -35,7 +35,6 @@ std::shared_ptr<IndexDefinition> IndexDefinitionManager::getIndex(const string_v
 		    ret = nullptr;
 		}
 	}
-	mu.unlock();
 	return ret;
 }
 
