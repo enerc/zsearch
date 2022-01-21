@@ -21,7 +21,9 @@ IndexChunk::IndexChunk(shared_ptr<BaseIndex> &_base,shared_ptr<dictionary::Dicti
 		chunk(_chunk),
 		scale(_scale),
 		aquiredForWriting(false){
-	data->chunk = _chunk;
+    if (data->chunk != _chunk) {
+        data->chunk = _chunk;       // file mapped
+    }
 	len = base->getLength();
 	minV = master->minMax[chunk][0];
 	maxV = master->minMax[chunk][1];
