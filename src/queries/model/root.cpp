@@ -78,9 +78,9 @@ void RootModel::executeQuery(queries::builders::AST *ast) {
             return;
         }
         selectChunks();
+        nbResults = 0;
         execShaderOnCpu();
         postFilter();
-        nbResults = fastCount(workingSet,workingSetSize);
         Log::debug("Query/subquery "+myName() + " took " + timeSpent(n) + ". There were "+to_string(jobs.size()) + " chunks to scan (about "+ to_string(jobs.size()*CHUNK_SIZE)+ " documents). Output has "+to_string(nbResults)+" results");
     }
 }

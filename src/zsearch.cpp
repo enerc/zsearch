@@ -5,6 +5,7 @@
 #include "../git.h"
 #include "../config.h"
 #include "queries/executor/server.hpp"
+#include "devices/cpu/threadPool.hpp"
 
 #define TERMINAL_COLOR_WELCOME "\033[38;5;208m"
 extern void createTestFiles();
@@ -14,6 +15,7 @@ using namespace std;
 
 void signalHandler( int signum ) {
     queries::executor::Server::stop();
+    devices::ThreadPoolManager::shutdown();
     exit(signum);
 }
 

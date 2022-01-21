@@ -87,8 +87,8 @@ public:
     ~BaseModel();
 
     virtual void mergeChildrenCandidates() = 0;
-    virtual bool execShaderOnCpu() =  0;
-    virtual bool execShaderThreadOnCpu(uint32_t thread,uint32_t nbThreads) = 0;
+    virtual uint64_t execShaderOnCpu() =  0;
+    virtual uint64_t execShaderThreadOnCpu(uint32_t thread,uint32_t nbThreads) = 0;
     virtual __uint128_t getResult(bool &isFloat) const = 0;
     virtual mapping::index_types getResultType() { return mapping::index_type_none; }
     virtual int adjustScaling(int scaling) { return scaling; }

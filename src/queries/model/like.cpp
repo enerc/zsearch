@@ -17,7 +17,7 @@ namespace queries::model {
     offsets++; \
 }
 
-bool LikeModel::execShaderThreadOnCpu(uint32_t thread,uint32_t nbThreads) {
+uint64_t LikeModel::execShaderThreadOnCpu(uint32_t thread,uint32_t nbThreads) {
     uint32_t JobLen = (jobs.size() + nbThreads - 1) / nbThreads;
     uint32_t start = JobLen * thread;
     Kernels k;
@@ -42,7 +42,8 @@ bool LikeModel::execShaderThreadOnCpu(uint32_t thread,uint32_t nbThreads) {
     const __m256i avx2_search_needle_first_byte = _mm256_set1_epi8(w.front());
     const __m256i avx2_search_needle_last_byte = _mm256_set1_epi8(w.back());
 
-    for (uint32_t i = start; i < start + JobLen && i < jobs.size(); i++) {
+    int x = 0;
+    for (uint32_t i = start; i < start + JobLen && i < jobs.size(); i++,x++) {
         shared_ptr<IndexChunk> c = indexManagers.at(0)->getChunkForRead(i);
         const uint32_t chunkId = c->getChunk();
         shared_ptr<Dictionary> dic = c->getDictionary();
@@ -266,7 +267,7 @@ bool LikeModel::execShaderThreadOnCpu(uint32_t thread,uint32_t nbThreads) {
             workingSet[chunkId * CHUNK_SIZE / 64 + (documentId >> 6)] = res;
         }
     }
-    return true;
+    return fastCount(workingSet+start * CHUNK_SIZE / 64,x*CHUNK_SIZE / 8);;
 }
 
 bool LikeModel::prepareJob() {

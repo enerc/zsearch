@@ -10,17 +10,19 @@ namespace queries::model {
 inline void mergeDeleted(uint64_t *workingSet,const void *deletedInfo) {
     fastAnd(workingSet,workingSet,deletedInfo,CHUNK_SIZE/8);
 }
-bool Kernels::execKernelNone(const std::shared_ptr<indexes::IndexManager> &indexManager, uint64_t *workingSet,const std::vector<uint32_t>& jobs, uint32_t start, uint32_t JobLen) {
-    for (uint32_t i = start; i < start + JobLen && i < jobs.size(); i++) {
+
+uint64_t Kernels::execKernelNone(const std::shared_ptr<indexes::IndexManager> &indexManager, uint64_t *workingSet,const std::vector<uint32_t>& jobs, uint32_t start, uint32_t JobLen) {
+    uint j= 0;
+    for (uint32_t i = start; i < start + JobLen && i < jobs.size(); i++,j++) {
         shared_ptr<IndexChunk> c = indexManager->getChunkForRead(jobs.at(i));
         const uint32_t chunkId = c->getChunk();
         fastMemcpy4(workingSet+chunkId * CHUNK_SIZE / 64,c->getBase()->getDeletedInfo(),CHUNK_SIZE/8);
     }
-    return true;
+    return fastCount(workingSet+start * CHUNK_SIZE / 64,j*CHUNK_SIZE / 8);
 }
 
 // Assume all indexes have the same size ... for now
-template<MergeOper merge> bool Kernels::execKernelNumbers(const std::vector<std::shared_ptr<indexes::IndexManager>> &indexManagers,uint64_t *workingSet,const std::vector<uint32_t>& jobs,uint32_t start, uint32_t JobLen,const Codegen &code) {
+template<MergeOper merge> uint64_t Kernels::execKernelNumbers(const std::vector<std::shared_ptr<indexes::IndexManager>> &indexManagers,uint64_t *workingSet,const std::vector<uint32_t>& jobs,uint32_t start, uint32_t JobLen,const Codegen &code) {
     if (indexManagers.at(0)->getMaxArraySize() == 1) {
         return execKernelNumbersNoArray<merge>(indexManagers,workingSet,jobs,start,JobLen,code);
     }
@@ -38,8 +40,9 @@ template<MergeOper merge> bool Kernels::execKernelNumbers(const std::vector<std:
         blocSizes.at(z) = StorageModelFactory::getModelSize(e->getLength());
         z++;
     }
+    uint j = 0;
 
-    for (uint32_t i = start; i < start + JobLen && i < jobs.size() && jobs.at(i) < indexManagers.at(0)->getNumberOfChunks(); i++) {
+    for (uint32_t i = start; i < start + JobLen && i < jobs.size() && jobs.at(i) < indexManagers.at(0)->getNumberOfChunks(); i++,j++) {
         z = 0;
         for (const auto &e : indexManagers) {
             bases.at(z) = e->getData(jobs.at(i));
@@ -106,10 +109,10 @@ template<MergeOper merge> bool Kernels::execKernelNumbers(const std::vector<std:
         }
     }
     free(banks);
-    return true;
+    return fastCount(workingSet+start * CHUNK_SIZE / 64,j*CHUNK_SIZE / 8);
 }
 
-template<MergeOper merge> bool Kernels::execKernelNumbersNoArray(const std::vector<std::shared_ptr<indexes::IndexManager>> &indexManagers,uint64_t *workingSet,const std::vector<uint32_t>& jobs,uint32_t start, uint32_t JobLen,const Codegen &code) {
+template<MergeOper merge> uint64_t Kernels::execKernelNumbersNoArray(const std::vector<std::shared_ptr<indexes::IndexManager>> &indexManagers,uint64_t *workingSet,const std::vector<uint32_t>& jobs,uint32_t start, uint32_t JobLen,const Codegen &code) {
     vector<void*> bases;
     bases.resize(indexManagers.size());
     vector<uint32_t> blocSizes;
@@ -125,7 +128,8 @@ template<MergeOper merge> bool Kernels::execKernelNumbersNoArray(const std::vect
         z++;
     }
 
-    for (uint32_t i = start; i < start + JobLen && i < jobs.size() && jobs.at(i) < indexManagers.at(0)->getNumberOfChunks(); i++) {
+    uint j=0;
+    for (uint32_t i = start; i < start + JobLen && i < jobs.size() && jobs.at(i) < indexManagers.at(0)->getNumberOfChunks(); i++,j++) {
         z = 0;
         for (const auto &e : indexManagers) {
             bases.at(z) = e->getData(jobs.at(i));
@@ -171,16 +175,17 @@ template<MergeOper merge> bool Kernels::execKernelNumbersNoArray(const std::vect
         }
     }
     free(banks);
-    return true;
+    return fastCount(workingSet+start * CHUNK_SIZE / 64,j*CHUNK_SIZE / 8);
 }
 
-template<OperatorType oper,MergeOper merge> bool Kernels::execKernelVar(const std::shared_ptr<indexes::IndexManager> &indexManager, uint64_t *workingSet,const std::vector<uint32_t>& jobs, uint32_t start, uint32_t JobLen, const vector<string>  &toSearch) {
+template<OperatorType oper,MergeOper merge> uint64_t Kernels::execKernelVar(const std::shared_ptr<indexes::IndexManager> &indexManager, uint64_t *workingSet,const std::vector<uint32_t>& jobs, uint32_t start, uint32_t JobLen, const vector<string>  &toSearch) {
     auto banks = (uint8_t*)aligned_alloc(256,MAX_BANKS*8*32);
     if (banks == nullptr) {
         Log::panic("Fails to alloc space for kernel data.");
     }
 
-    for (uint32_t i = start; i < start+JobLen && i < jobs.size(); i++) {
+    uint q=0;
+    for (uint32_t i = start; i < start+JobLen && i < jobs.size(); i++,q++) {
         shared_ptr<IndexChunk> c = indexManager->getChunkForRead(jobs.at(i));
         const uint32_t chunkId = c->getChunk();
         const uint32_t len = c->getBase()->getLength();
@@ -263,18 +268,18 @@ template<OperatorType oper,MergeOper merge> bool Kernels::execKernelVar(const st
         mergeDeleted(workingSet + chunkId * CHUNK_SIZE / 64, c->getBase()->getDeletedInfo());
     }
     free(banks);
-    return true;
+    return fastCount(workingSet+start * CHUNK_SIZE / 64,q*CHUNK_SIZE / 8);
 }
 
 
-template bool Kernels::execKernelNumbers<MergeOr>(const std::vector<std::shared_ptr<indexes::IndexManager>> &indexManagers,uint64_t *workingSet,const std::vector<uint32_t>& jobs,uint32_t start, uint32_t JobLen,const Codegen &code);
-template bool Kernels::execKernelNumbers<MergeNone>(const std::vector<std::shared_ptr<indexes::IndexManager>> &indexManagers,uint64_t *workingSet,const std::vector<uint32_t>& jobs,uint32_t start, uint32_t JobLen,const Codegen &code);
-template bool Kernels::execKernelNumbers<MergeAnd>(const std::vector<std::shared_ptr<indexes::IndexManager>> &indexManagers,uint64_t *workingSet,const std::vector<uint32_t>& jobs,uint32_t start, uint32_t JobLen,const Codegen &code);
-template bool Kernels::execKernelVar<OperEqualType,MergeOr> (const std::shared_ptr<indexes::IndexManager> &indexManager, uint64_t *workingSet,const std::vector<uint32_t>& jobs, uint32_t start, uint32_t JobLen, const vector<string>  &toSearch) ;
-template bool Kernels::execKernelVar<OperEqualType,MergeNone> (const std::shared_ptr<indexes::IndexManager> &indexManager, uint64_t *workingSet,const std::vector<uint32_t>& jobs, uint32_t start, uint32_t JobLen, const vector<string>  &toSearch) ;
-template bool Kernels::execKernelVar<OperEqualType,MergeAnd> (const std::shared_ptr<indexes::IndexManager> &indexManager, uint64_t *workingSet,const std::vector<uint32_t>& jobs, uint32_t start, uint32_t JobLen, const vector<string>  &toSearch) ;
-template bool Kernels::execKernelVar<OperNotEqualType,MergeOr> (const std::shared_ptr<indexes::IndexManager> &indexManager, uint64_t *workingSet,const std::vector<uint32_t>& jobs, uint32_t start, uint32_t JobLen, const vector<string>  &toSearch) ;
-template bool Kernels::execKernelVar<OperNotEqualType,MergeNone> (const std::shared_ptr<indexes::IndexManager> &indexManager, uint64_t *workingSet,const std::vector<uint32_t>& jobs, uint32_t start, uint32_t JobLen, const vector<string>  &toSearch) ;
-template bool Kernels::execKernelVar<OperNotEqualType,MergeAnd> (const std::shared_ptr<indexes::IndexManager> &indexManager, uint64_t *workingSet,const std::vector<uint32_t>& jobs, uint32_t start, uint32_t JobLen, const vector<string>  &toSearch) ;
+template uint64_t Kernels::execKernelNumbers<MergeOr>(const std::vector<std::shared_ptr<indexes::IndexManager>> &indexManagers,uint64_t *workingSet,const std::vector<uint32_t>& jobs,uint32_t start, uint32_t JobLen,const Codegen &code);
+template uint64_t Kernels::execKernelNumbers<MergeNone>(const std::vector<std::shared_ptr<indexes::IndexManager>> &indexManagers,uint64_t *workingSet,const std::vector<uint32_t>& jobs,uint32_t start, uint32_t JobLen,const Codegen &code);
+template uint64_t Kernels::execKernelNumbers<MergeAnd>(const std::vector<std::shared_ptr<indexes::IndexManager>> &indexManagers,uint64_t *workingSet,const std::vector<uint32_t>& jobs,uint32_t start, uint32_t JobLen,const Codegen &code);
+template uint64_t Kernels::execKernelVar<OperEqualType,MergeOr> (const std::shared_ptr<indexes::IndexManager> &indexManager, uint64_t *workingSet,const std::vector<uint32_t>& jobs, uint32_t start, uint32_t JobLen, const vector<string>  &toSearch) ;
+template uint64_t Kernels::execKernelVar<OperEqualType,MergeNone> (const std::shared_ptr<indexes::IndexManager> &indexManager, uint64_t *workingSet,const std::vector<uint32_t>& jobs, uint32_t start, uint32_t JobLen, const vector<string>  &toSearch) ;
+template uint64_t Kernels::execKernelVar<OperEqualType,MergeAnd> (const std::shared_ptr<indexes::IndexManager> &indexManager, uint64_t *workingSet,const std::vector<uint32_t>& jobs, uint32_t start, uint32_t JobLen, const vector<string>  &toSearch) ;
+template uint64_t Kernels::execKernelVar<OperNotEqualType,MergeOr> (const std::shared_ptr<indexes::IndexManager> &indexManager, uint64_t *workingSet,const std::vector<uint32_t>& jobs, uint32_t start, uint32_t JobLen, const vector<string>  &toSearch) ;
+template uint64_t Kernels::execKernelVar<OperNotEqualType,MergeNone> (const std::shared_ptr<indexes::IndexManager> &indexManager, uint64_t *workingSet,const std::vector<uint32_t>& jobs, uint32_t start, uint32_t JobLen, const vector<string>  &toSearch) ;
+template uint64_t Kernels::execKernelVar<OperNotEqualType,MergeAnd> (const std::shared_ptr<indexes::IndexManager> &indexManager, uint64_t *workingSet,const std::vector<uint32_t>& jobs, uint32_t start, uint32_t JobLen, const vector<string>  &toSearch) ;
 
 }

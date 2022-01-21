@@ -8,7 +8,7 @@ namespace queries::model {
 class ImportFileModel : public RootModel {
 public:
     using RootModel::RootModel;
-    bool execShaderOnCpu() override ;
+    uint64_t execShaderOnCpu() override ;
     void execute(queries::builders::AST *) override;
     [[maybe_unused]] void setQueryStatus(const std::shared_ptr<queries::QueryStatus> &queryStatus);
     [[nodiscard]] std::string myName() const override {return "importFile";}

@@ -7,7 +7,7 @@ using namespace mapping;
 
 namespace queries::model {
 
-bool ImportFileModel::execShaderOnCpu() {
+uint64_t ImportFileModel::execShaderOnCpu() {
     ImportFile ifile(queryStatus,path,indexName);
     if (queryStatus->status != HTTP_200) return false;
     auto ret = ifile.doImport(queryStatus);

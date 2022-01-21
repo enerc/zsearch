@@ -11,7 +11,7 @@ void IsNullModel::mergeChildrenCandidates() {
 
 }
 
-bool IsNullModel::execShaderThreadOnCpu(uint32_t thread,uint32_t nbThreads) {
+uint64_t IsNullModel::execShaderThreadOnCpu(uint32_t thread,uint32_t nbThreads) {
     uint32_t len = (jobs.size()+nbThreads-1)/nbThreads;
     uint32_t start =  len * thread;
     Kernels k;

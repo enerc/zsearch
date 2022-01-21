@@ -20,7 +20,7 @@ void NoneModel::parseSubExpression(queries::builders::AST *ast) {
     }
 }
 
-bool NoneModel::execShaderThreadOnCpu(uint32_t thread, uint32_t nbThreads) {
+uint64_t NoneModel::execShaderThreadOnCpu(uint32_t thread, uint32_t nbThreads) {
     uint32_t len = (jobs.size() + nbThreads - 1) / nbThreads;
     uint32_t start = len * thread;
     return Kernels::execKernelNone(indexManagers.at(0), workingSet, jobs, start, len);
