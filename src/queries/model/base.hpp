@@ -13,10 +13,6 @@ namespace queries::model {
 class BaseModel;
 
 typedef struct {
-    uint32_t v[16];
-} VarParameters;
-
-typedef struct {
     std::string field;
     std::string alias;
     std::shared_ptr<BaseModel> function;
@@ -97,10 +93,6 @@ public:
     virtual mapping::index_types getResultType() { return mapping::index_type_none; }
     virtual int adjustScaling(int scaling) { return scaling; }
     virtual void getFuncResult(const __uint128_t&src, __uint128_t &res)  {};
-    //void setIndexManager(const std::shared_ptr<indexes::IndexManager> &u) { indexManager = u; };
-    //void setType(mapping::storage_types u) { type = u; }
-    //[[maybe_unused]] void setValues(const std::vector<std::string>&v) { values = v;  };
-    //[[maybe_unused]] void setValue(const __uint128_t&v) { val = v; };
     [[maybe_unused]] void setLength(uint32_t l) { length = l; };
     [[nodiscard]] virtual std::string myName() const = 0;
     virtual void setMyName(const std::string &s) = 0;

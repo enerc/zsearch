@@ -7,7 +7,6 @@ namespace queries::model {
 class ValuesModel : public RootModel {
 public:
     using RootModel::RootModel;
-    bool execShaderOnCpu() override {return false;};
     [[nodiscard]] std::string myName() const override {return "values";}
     [[nodiscard]] ClassInstanceType getClassInstanceType()  const override {return ClassInstanceValues;};
 

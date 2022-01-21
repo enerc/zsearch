@@ -7,7 +7,6 @@ namespace queries::model {
 class MaxModel : public RootModel {
 public:
     using RootModel::RootModel;
-    bool execShaderOnCpu() override {return false;};
     [[nodiscard]] std::string myName() const override {return "max";}
     [[nodiscard]] ClassInstanceType getClassInstanceType()  const override {return ClassInstanceMax;};
     void initFunc(mapping::index_types t) override;

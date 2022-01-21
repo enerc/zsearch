@@ -40,7 +40,6 @@ class OrderModel : public RootModel {
 public:
     virtual ~OrderModel() { free(sortDataRaw); }
     using RootModel::RootModel;
-    bool execShaderOnCpu() override {return false;};
     [[nodiscard]] std::string myName() const override {return "order";}
     [[nodiscard]] ClassInstanceType getClassInstanceType()  const override {return ClassInstanceOrder;};
     void execute(queries::builders::AST *) override;

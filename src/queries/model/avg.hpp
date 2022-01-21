@@ -7,7 +7,6 @@ namespace queries::model {
 class AvgModel : public RootModel {
 public:
     using RootModel::RootModel;
-    bool execShaderOnCpu() override {return false;};
     [[nodiscard]] std::string myName() const override {return "avg";}
     [[nodiscard]] ClassInstanceType getClassInstanceType()  const override {return ClassInstanceAvg;};
     void initFunc(mapping::index_types t) override;

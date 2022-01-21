@@ -7,7 +7,6 @@ namespace queries::model {
 class InsertModel : public RootModel {
 public:
     using RootModel::RootModel;
-    bool execShaderOnCpu() override {return false;};
     [[nodiscard]] std::string myName() const override {return "insert";}
     [[nodiscard]] ClassInstanceType getClassInstanceType()  const override {return ClassInstanceInsert;};
 

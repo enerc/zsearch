@@ -7,7 +7,6 @@ namespace queries::model {
     class CountModel : public RootModel {
     public:
         using RootModel::RootModel;
-        bool execShaderOnCpu() override {return false;};
         void getFuncResult(const __uint128_t&src, __uint128_t &res)  override;
         [[nodiscard]] std::string myName() const override {return "count";}
         [[nodiscard]] ClassInstanceType getClassInstanceType()  const override {return ClassInstanceCount;};

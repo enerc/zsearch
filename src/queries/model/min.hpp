@@ -7,7 +7,6 @@ namespace queries::model {
 class MinModel : public RootModel {
     public:
         using RootModel::RootModel;
-        bool execShaderOnCpu() override {return false;};
         [[nodiscard]] std::string myName() const override {return "min";}
         [[nodiscard]] ClassInstanceType getClassInstanceType()  const override {return ClassInstanceMin;};
         void initFunc(mapping::index_types t) override;
