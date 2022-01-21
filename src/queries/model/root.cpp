@@ -1,12 +1,12 @@
 #include "root.hpp"
 #include "../../repository/indexRepository.hpp"
 #include "../../queries/builders/ast.hpp"
-
-#include <thread>
+#include "../../devices/cpu/threadPool.hpp"
 
 using namespace std;
 using namespace mapping;
 using namespace indexes;
+using namespace devices;
 
 namespace queries::model {
 
@@ -25,31 +25,20 @@ void RootModel::selectChunks(){
 void RootModel::mergeChildrenCandidates() {
 }
 
-bool RootModel::execShaderOnCpu() {
-    auto processor_count = min(thread::hardware_concurrency(),(uint)jobs.size());
-    if (processor_count == 0) {
-        processor_count = 1;
-    }
-    vector<pthread_t> threads;
-    vector<WorkerInitParam> w;
-    for (int i = 0; i < processor_count; i++) {
-        WorkerInitParam e;
-        e.t = this;
+uint64_t RootModel::execShaderOnCpu() {
+    ThreadPool *thPool = ThreadPoolManager::getInstance();
+    auto processor_count = min(thPool->getPoolSize(),(uint)jobs.size());
+    ThreadParam e;
+    e.thisClass = this;
+    e.nbThreads = processor_count;
+    e.func = nullptr;
+    e.action = actionExecShaderOnCpu;
+
+    for (int i = 0; i < e.nbThreads; i++) {
         e.me = i;
-        e.nbThreads = processor_count;
-        w.push_back(e);
+        thPool->addTask(e);
     }
-    for (int i = 0; i < processor_count; i++) {
-        pthread_t t;
-        pthread_create(&t, nullptr, RootModel::InternalThreadEntryFunc, &w.at(i));
-        threads.push_back(t);
-    }
-    for (auto &i : threads) {
-        void* status;
-        pthread_join(i, &status);
-    }
-    threads.clear();
-    w.clear();
+    thPool->wait();
     return true;
 }
 
